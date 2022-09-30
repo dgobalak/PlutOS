@@ -8,6 +8,7 @@
 #include "uart.h"
 
 #include "_threadsCore.h"
+#include "_kernelCore.h"
 
 //This is C. The expected function heading is int main(void)
 int main( void ) 
@@ -27,6 +28,9 @@ int main( void )
 	uint32_t* PSP = getNewThreadStack(512);
 	
 	setThreadingWithPSP(PSP);
+	
+	kernelInit();
+	osYield();
 	
 	while(1);
 	
