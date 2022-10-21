@@ -1,7 +1,7 @@
 	AREA handle_pend,CODE,READONLY
+	EXTERN task_switch
 	GLOBAL PendSV_Handler
 	PRESERVE8
-	EXTERN task_switch
 PendSV_Handler	
 	MRS r0, PSP
 	STMDB r0!, {r4-r11}
