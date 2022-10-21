@@ -1,11 +1,11 @@
 	AREA handle_pend,CODE,READONLY
-	EXTERN task_switch
+	EXTERN switchTask
 	GLOBAL PendSV_Handler
 	PRESERVE8
 PendSV_Handler	
 	MRS r0, PSP
 	STMDB r0!, {r4-r11}
-	BL task_switch
+	BL switchTask
 	MRS r0, PSP
 	;Move the return constant into LR
 	MOV LR,#0xFFFFFFFD

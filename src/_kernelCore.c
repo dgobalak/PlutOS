@@ -2,14 +2,14 @@
 #include "osDefs.h"
 
 #include <LPC17xx.h>
+#include <stdbool.h>
 
-// Index for current running task
-int osCurrentTask = 0;
+int osCurrentTask = 0; // Index for current running task
 
 osthread_t osThreads[MAX_THREADS]; // Array of all threads
 
-int threadNums = 0; // number of threads created
-int osNumThreadsRunning = 0; // number of threads that have started running
+int threadNums; // number of created threads
+int osNumThreadsRunning; // number of running threads
 
 uint32_t mspAddr; //the initial address of the MSP
 
@@ -18,21 +18,18 @@ void kernelInit(void) {
 	// Set PendSV priority
 	SHPR3 |= 0xFF << 16;
 	
-	//initialize the address of the MSP
+	// Initialize the address of the MSP
 	uint32_t* MSP_Original = 0;
 	mspAddr = *MSP_Original;
 }
 
+// Yield current task (Switch to next available task)
 void osYield(void) {
 	
 	if(osCurrentTask >= 0) {
 		osThreads[osCurrentTask].state = WAITING;	
-	
 		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - 16*4); //we are about to push 16 uint32_t's
 	}
-
-	osCurrentTask = (osCurrentTask+1)%(threadNums);
-	osThreads[osCurrentTask].state = ACTIVE;
 	
 	ICSR |= 1<<28;
 	__asm("isb");
@@ -51,7 +48,7 @@ bool osKernelStart() {
 		__set_PSP((uint32_t)osThreads[0].threadStack);
 		osYield();
 	}
-	return 0;
+	return false;
 }
 
 void setThreadingWithPSP(uint32_t* threadStack)
@@ -61,14 +58,12 @@ void setThreadingWithPSP(uint32_t* threadStack)
 	
 }
 
-/*
-	at the moment this just changes the stack from one to the other. I personally found
-	this to be easier to do in C. You may want to do more interesting things here.
-	For example, when implementing more sophisticated scheduling algorithms, perhaps now is the time
-	to figure out which thread should run, and then set PSP to its stack pointer...
-*/
-int task_switch(void){
-		__set_PSP((uint32_t)osThreads[osCurrentTask].threadStack); //set the new PSP
-		return 1; //You are free to use this return value in your assembly eventually. It will be placed in r0, so be sure
-		//to access it before overwriting r0
+int switchTask(void){
+	// TODO: Make use of the priority when choosing next task
+	osCurrentTask = (osCurrentTask+1)%(threadNums);
+	osThreads[osCurrentTask].state = ACTIVE;
+	
+	__set_PSP((uint32_t)osThreads[osCurrentTask].threadStack); //set the new PSP
+	return 1; //You are free to use this return value in your assembly eventually. It will be placed in r0, so be sure
+	//to access it before overwriting r0
 }

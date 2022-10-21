@@ -18,6 +18,6 @@ void setThreadingWithPSP(uint32_t* threadStack);
 bool osKernelStart(void);
 
 //a C function to help us to switch PSP so we don't have to do this in assembly
-int task_switch(void);
+int switchTask(void);
 
 #endif //_KERNEL_CORE_H

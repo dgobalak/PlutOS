@@ -1,6 +1,8 @@
 #ifndef _THREADS_CORE_H
 #define _THREADS_CORE_H
 
+#include "osDefs.h"
+
 #include <LPC17xx.h>
 #include <stdint.h>
 
@@ -14,6 +16,6 @@ uint32_t* getNewThreadStack(uint32_t offset);
 void setThreadingWithPSP(uint32_t* threadStack);
 
 // Create a new thread
-int osNewThread(void (*taskFunc)(void*args));
+int osNewThread(void (*taskFunc)(void*args), thread_priority_t priority);
 
 #endif // _THREADS_CORE_H

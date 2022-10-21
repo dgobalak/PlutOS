@@ -15,6 +15,8 @@
 #define SHPR3 *(uint32_t*)0xE000ED20
 #define ICSR *(uint32_t*)0xE000ED04
 
+#define LOWEST_PRIORITY 0
+
 typedef enum thread_state {
 	CREATED,
 	ACTIVE,
@@ -22,10 +24,14 @@ typedef enum thread_state {
 	DESTROYED
 } thread_state_t;
 
+// Larger number results in a higher priority
+typedef uint32_t thread_priority_t;
+
 typedef struct osthread {
 	uint32_t * threadStack;
 	void (*threadFunc)(void * args);
 	thread_state_t state;
+	thread_priority_t priority; // TODO: Implement priorities
 } osthread_t;
 
 

@@ -1,23 +1,22 @@
 #include "_threadsCore.h"
 #include "osDefs.h"
 
+#include <stdint.h>
 #include <stdio.h>
 
 extern int osCurrentTask;
 extern osthread_t osThreads[MAX_THREADS];
 
-extern int threadNums; //number of threads actually created
-extern int osNumThreadsRunning; //number of threads that have started runnin
+extern int threadNums; // number of created threads
+extern int osNumThreadsRunning; // number of running threads
 extern uint32_t mspAddr; //the initial address of the MSP
 
-uint32_t* getMSPInitialLocation(void)
-{
+uint32_t* getMSPInitialLocation(void) {
 	uint32_t* MSP = 0;
 	return (uint32_t*)*MSP;
 }
 
-uint32_t* getNewThreadStack(uint32_t offset)
-{
+uint32_t* getNewThreadStack(uint32_t offset) {
 	static uint8_t numStacks = 0;
 	
 	if (offset % STACK_SIZE != 0)
@@ -37,15 +36,15 @@ uint32_t* getNewThreadStack(uint32_t offset)
 }
 
 //returns the thread ID, or -1 if that is not possible
-int osNewThread(void (*taskFunc)(void*args))
-{
+int osNewThread(void (*taskFunc)(void*args), thread_priority_t priority) {
 	if(threadNums < MAX_THREADS)
 	{
-		osThreads[threadNums].state = WAITING; //tells the OS that it is ready but not yet run
+		osThreads[threadNums].state = WAITING;
 		osThreads[threadNums].threadFunc = taskFunc;
 		osThreads[threadNums].threadStack = getNewThreadStack(MSR_STACK_SIZE + threadNums*THREAD_STACK_SIZE);//(uint32_t*)((mspAddr - MSR_STACK_SIZE) - (threadNums)*THREAD_STACK_SIZE);
+		osThreads[threadNums].priority = priority;
 		
-		//Now we need to set up the stack
+		//Now we need to set up the stack; it should 'look' like the thread is already running
 		
 		//First is xpsr, the status register. If bit 24 is not set and we are in thread mode we get a hard fault, so we just make sure it's set
 		*(--osThreads[threadNums].threadStack) = 1<<24;

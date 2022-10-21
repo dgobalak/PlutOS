@@ -384,11 +384,6 @@
           <GroupName>Source Group 1</GroupName>
           <Files>
             <File>
-              <FileName>p1_main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\p1_main.c</FilePath>
-            </File>
-            <File>
               <FileName>Retarget.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\Retarget.c</FilePath>
@@ -427,6 +422,11 @@
               <FileName>osDefs.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\src\osDefs.h</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\main.c</FilePath>
             </File>
           </Files>
         </Group>
