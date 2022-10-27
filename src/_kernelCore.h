@@ -4,20 +4,38 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//initializes memory structures and interrupts necessary to run the kernel
+/**
+ * @brief Initializes memory structures and interrupts necessary to run the kernel
+ * 
+ */
 void kernelInit(void);
 
-//called by the kernel to schedule which threads to run
+/**
+ * @brief Called by the kernel to yield current task (Switch to next available task)
+ * 
+ */
 void osYield(void);
 
-// Sets the value of PSP to threadStack and ensures that the microcontroller
-// is using that value by changing the CONTROL register.
+/**
+ * @brief Set the value of PSP to threadStack and ensures that the microcontroller is using 
+ * that value by changing the CONTROL register
+ * 
+ * @param threadStack The new value of PSP
+ */
 void setThreadingWithPSP(uint32_t* threadStack);
 
-//starts the kernel if threads have been created. Returns false otherwise
+/**
+ * @brief Starts the kernel if threads have been created. Returns false otherwise
+ * 
+ * @return Never returns if the kernel has been started correctly, false otherwise
+ */
 bool osKernelStart(void);
 
-//a C function to help us to switch PSP so we don't have to do this in assembly
+/**
+ * @brief Switch the PSP to the threadStack of the next thread to run
+ * 
+ * @return int For now, always returns 1
+ */
 int switchTask(void);
 
 #endif //_KERNEL_CORE_H
