@@ -16,7 +16,6 @@ void task1(void* args) {
 	while(1) {
 		x++;
 		printf("In task 1. x is: %d\n",x);
-		osYield();
 	}
 }
 
@@ -31,7 +30,6 @@ void task2(void* args) {
 	while(1) {
 		y++;
 		printf("In task 2. y is: %d\n",y);
-		osYield();
 	}
 }
 
@@ -45,7 +43,6 @@ void task2(void* args) {
 void osIdleTask(void* args) {
 	while(1) {
 		printf("in task 0\n");
-		osYield();
 	}
 }
 

@@ -38,11 +38,11 @@ uint32_t* getNewThreadStack(uint32_t offset) {
 	return PSP;
 }
 
-int osNewThread(void (*taskFunc)(void*args), thread_priority_t priority) {
+thread_id_t osNewThread(void (*taskFunc)(void*args), thread_priority_t priority) {
 	// TODO: Make use of priority
 	if(threadNums < MAX_THREADS) {
 		// Configure the thread in the array
-		osThreads[threadNums].state = WAITING;
+		osThreads[threadNums].state = ACTIVE;
 		osThreads[threadNums].threadFunc = taskFunc;
 		osThreads[threadNums].threadStack = getNewThreadStack(MSR_STACK_SIZE + threadNums*THREAD_STACK_SIZE);//(uint32_t*)((mspAddr - MSR_STACK_SIZE) - (threadNums)*THREAD_STACK_SIZE);
 		osThreads[threadNums].priority = priority;
@@ -79,8 +79,7 @@ int osNewThread(void (*taskFunc)(void*args), thread_priority_t priority) {
 		// Now the stack is set up, the thread's SP is correct, since we've been decrementing it.
 		threadNums++;
 		osNumThreadsRunning++;
-		return threadNums - 1; // Return the thread index
+		return (thread_id_t)(threadNums - 1); // Return the thread index
 	}
 	return -1;
 }
-

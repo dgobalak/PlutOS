@@ -17,6 +17,12 @@ void kernelInit(void);
 void osYield(void);
 
 /**
+ * @brief Determine the next task to be run
+ *
+ */
+void osSched(void);
+
+/**
  * @brief Set the value of PSP to threadStack and ensures that the microcontroller is using 
  * that value by changing the CONTROL register
  * 

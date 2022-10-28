@@ -35,8 +35,10 @@ void setThreadingWithPSP(uint32_t* threadStack);
  * 
  * @param taskFunc The function that the thread will run
  * @param priority The priority of the thread
- * @return int The thread ID of the new thread. Returns -1 if error occurs
+ * @return thread_id_t The thread ID of the new thread. Returns -1 if error occurs
  */
-int osNewThread(void (*taskFunc)(void*args), thread_priority_t priority);
+thread_id_t osNewThread(void (*taskFunc)(void*args), thread_priority_t priority);
+
+
 
 #endif // _THREADS_CORE_H

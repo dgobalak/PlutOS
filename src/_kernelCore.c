@@ -20,17 +20,30 @@ void kernelInit(void) {
 	// Initialize the address of the MSP
 	uint32_t* MSP_Original = 0;
 	mspAddr = *MSP_Original;
+	
+	SysTick_Config(TIMESLICE_TICKS);
+}
+
+void osSched(void) {
+	
+	// Choose next thread to run
+	// TODO: Make use of the priority when choosing next task
+	// For now, just do round robin scheduling with no priorities
+	osCurrentTask = (osCurrentTask+1)%(threadNums);
+	osThreads[osCurrentTask].state = RUNNING;
 }
 
 void osYield(void) {
 	if(osCurrentTask >= 0) {
 		// Yield the current task
-		osThreads[osCurrentTask].state = WAITING;	
+		osThreads[osCurrentTask].state = ACTIVE;	
 		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - 16*4); //we are about to push 16 uint32_t's
 	}
 	
-	// Set PENDSVSET to 1 to make PendSV exception pending
-	ICSR |= 1<<28;
+	osSched();
+	
+	// Pend the PendSV interrupt
+	ICSR |= 1<<28; // Set PENDSVSET to 1 to make PendSV exception pending
 	__asm("isb");
 }
 
@@ -53,11 +66,6 @@ void setThreadingWithPSP(uint32_t* threadStack)
 }
 
 int switchTask(void){
-	// TODO: Make use of the priority when choosing next task
-	// For now, just do round robin scheduling with no priorities
-	osCurrentTask = (osCurrentTask+1)%(threadNums);
-	osThreads[osCurrentTask].state = ACTIVE;
-	
 	__set_PSP((uint32_t)osThreads[osCurrentTask].threadStack); //set the new PSP
 
 	// The return value can be accessed in the assembly code. Access it from r0 before overwriting r0

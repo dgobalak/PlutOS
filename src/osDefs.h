@@ -7,14 +7,15 @@
 #define MAX_THREADS 10 // Maximum number of threads that can be created
 
 #define MAX_POOL_SIZE 0x2000 // Max size of all stacks combined
-
-#define MSR_STACK_SIZE 512
+#define MSR_STACK_SIZE 512 // MSP Stack Size (First thread stack starts at this offset from MSP)
 #define THREAD_STACK_SIZE 0x200 // Size of each thread's stack
 
 #define SHPR3 *(uint32_t*)0xE000ED20 // System Handler Priority Register 3
 #define ICSR *(uint32_t*)0xE000ED04 // Interrupt Control and State Register
 
 #define LOWEST_PRIORITY 0 // Lowest priority for a thread
+
+#define TIMESLICE_TICKS (SystemCoreClock/1000) // 1ms Time Slice
 
 /**
  * @brief The state of a thread
@@ -23,7 +24,9 @@
 typedef enum thread_state {
 	CREATED,
 	ACTIVE,
-	WAITING,
+	RUNNING,
+	SLEEPING,
+	BLOCKED,
 	DESTROYED
 } thread_state_t;
 
@@ -33,6 +36,12 @@ typedef enum thread_state {
  * 
  */
 typedef uint32_t thread_priority_t;
+
+/**
+ * @brief The ID number of a thread
+ * 
+ */
+typedef int32_t thread_id_t;
 
 /**
  * @brief The thread structure
