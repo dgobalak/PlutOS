@@ -40,8 +40,6 @@ void osYield(void) {
 		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - 16*4); //we are about to push 16 uint32_t's
 	}
 	
-	osSched();
-	
 	// Pend the PendSV interrupt
 	ICSR |= 1<<28; // Set PENDSVSET to 1 to make PendSV exception pending
 	__asm("isb");
@@ -66,6 +64,7 @@ void setThreadingWithPSP(uint32_t* threadStack)
 }
 
 int switchTask(void){
+	osSched(); // Choose next task
 	__set_PSP((uint32_t)osThreads[osCurrentTask].threadStack); //set the new PSP
 
 	// The return value can be accessed in the assembly code. Access it from r0 before overwriting r0

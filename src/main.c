@@ -34,6 +34,20 @@ void task2(void* args) {
 }
 
 /**
+ * @brief Test thread function that prints the value
+ * of a counter and then yields
+ * 
+ * @param args Thread arguments
+ */
+void task3(void* args) {
+	int z = 0;
+	while(1) {
+		z++;
+		printf("In task 3. z is: %d\n",z);
+	}
+}
+
+/**
  * @brief Idle task that prints a message and then yields
  * @note It exists so that there's at least 1 function that
  * can be run when there are no other threads to run
@@ -57,7 +71,8 @@ int main(void) {
 	osNewThread(osIdleTask, LOWEST_PRIORITY);
 	osNewThread(task1, LOWEST_PRIORITY);
 	osNewThread(task2, LOWEST_PRIORITY);
-	
+	osNewThread(task3, LOWEST_PRIORITY);
+
 	// Start kernel and start running first thread
 	osKernelStart();
 	
