@@ -15,7 +15,10 @@
 
 #define LOWEST_PRIORITY 0 // Lowest priority for a thread
 
-#define TIMESLICE_TICKS (SystemCoreClock/1000) // 1ms Time Slice
+#define SYSTICK_TICKS (SystemCoreClock/1000) // Systick ever 1ms
+#define TIMESLICE_MS 1
+
+#define MAX_TIME_UNTIL_SWITCH_MS 20 
 
 /**
  * @brief The state of a thread
@@ -44,16 +47,31 @@ typedef uint32_t thread_priority_t;
 typedef int32_t thread_id_t;
 
 /**
+ * @brief An elapsed time in ms
+ * 
+ */
+typedef uint32_t ms_time_t;
+
+typedef enum thread_type {
+	PERIODIC = 0, // 0b000
+	NON_PERIODIC = 1, // 0b001
+} thread_type_t;
+
+/**
  * @brief The thread structure
  * @param threadStack The PSP of the thread
  * @param threadFunc The function that the thread will run
  * @param threadState The state of the thread
+ * @param timeSinceSwitch The number of ms since the last context switch
  * @param threadPriority The priority of the thread
  */
 typedef struct osthread {
 	uint32_t * threadStack;
 	void (*threadFunc)(void * args);
 	thread_state_t state;
+	thread_type_t type;
+	ms_time_t timeRunning;
+	ms_time_t timeSleeping;
 	thread_priority_t priority; // TODO: Implement priorities
 } osthread_t;
 

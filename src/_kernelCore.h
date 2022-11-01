@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "osDefs.h"
+
 /**
  * @brief Initializes memory structures and interrupts necessary to run the kernel
  * 
@@ -15,6 +17,10 @@ void kernelInit(void);
  * 
  */
 void osYield(void);
+
+void osYieldFromSysTick(void);
+
+void osSleep(ms_time_t sleepTime);
 
 /**
  * @brief Determine the next task to be run

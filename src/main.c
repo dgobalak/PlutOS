@@ -15,7 +15,8 @@ void task1(void* args) {
 	int x = 0;
 	while(1) {
 		x++;
-		printf("In task 1. x is: %d\n",x);
+		printf("1\n");
+		osYield();
 	}
 }
 
@@ -29,7 +30,8 @@ void task2(void* args) {
 	int y = 0;
 	while(1) {
 		y++;
-		printf("In task 2. y is: %d\n",y);
+		printf("2\n");
+		osYield();
 	}
 }
 
@@ -43,20 +45,8 @@ void task3(void* args) {
 	int z = 0;
 	while(1) {
 		z++;
-		printf("In task 3. z is: %d\n",z);
-	}
-}
-
-/**
- * @brief Idle task that prints a message and then yields
- * @note It exists so that there's at least 1 function that
- * can be run when there are no other threads to run
- * 
- * @param args Thread arguments
- */
-void osIdleTask(void* args) {
-	while(1) {
-		printf("in task 0\n");
+		printf("3\n");
+		osYield();
 	}
 }
 
@@ -68,10 +58,9 @@ int main(void) {
 	kernelInit();
 	
 	// Create threads; the priority values are not used yet
-	osNewThread(osIdleTask, LOWEST_PRIORITY);
-	osNewThread(task1, LOWEST_PRIORITY);
-	osNewThread(task2, LOWEST_PRIORITY);
-	osNewThread(task3, LOWEST_PRIORITY);
+	osNewThread(task1, NON_PERIODIC, LOWEST_PRIORITY);
+	osNewThread(task2, NON_PERIODIC, LOWEST_PRIORITY);
+	osNewThread(task3, NON_PERIODIC, LOWEST_PRIORITY);
 
 	// Start kernel and start running first thread
 	osKernelStart();
