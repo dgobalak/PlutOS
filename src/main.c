@@ -25,7 +25,7 @@ void task1(void* args) {
 void task2(void* args) {
 	while(1) {
 		printf("In Task 2\n");
-		osSleep(1);
+		osSleep(10);
 	}
 }
 

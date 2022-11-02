@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-extern bool osYieldMutex;
+extern bool osYieldMutex; // Mutex to protect yield
 extern int osCurrentTask; // Index for current running task
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 extern int threadNums; // number of created threads

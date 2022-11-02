@@ -399,11 +399,6 @@
               <FilePath>.\src\_threadsCore.c</FilePath>
             </File>
             <File>
-              <FileName>_threadsCore.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\_threadsCore.h</FilePath>
-            </File>
-            <File>
               <FileName>_kernelCore.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\_kernelCore.c</FilePath>
@@ -432,6 +427,11 @@
               <FileName>_timerCore.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\_timerCore.c</FilePath>
+            </File>
+            <File>
+              <FileName>_threadsCore.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>C:\Users\dgobalak\Desktop\PlutOS\src\_threadsCore.h</FilePath>
             </File>
             <File>
               <FileName>_timerCore.h</FileName>

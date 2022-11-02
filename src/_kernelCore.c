@@ -48,22 +48,8 @@ void osSched(void) {
 	// Choose next thread to run
 	// TODO: Make use of the priority when choosing next task
 	// For now, just do round robin scheduling with no priorities
-	/*thread_id_t firstID = osCurrentTask;
-	osCurrentTask = (osCurrentTask+1)%(threadNums);
-	
-	while (osCurrentTask != firstID) {
-		if ((osThreads[osCurrentTask].state != ACTIVE) || (osCurrentTask == IDLE_THREAD_ID)) {
-			continue;
-		}
-		osCurrentTask = (osCurrentTask+1)%(threadNums);
-	}
-	
-	if (osThreads[osCurrentTask].state != ACTIVE) {
-		osCurrentTask = IDLE_THREAD_ID;
-	}*/
 	
 	thread_id_t id = 0;
-	
 	do {
 		osCurrentTask = (osCurrentTask+1)%(threadNums);
 		id++;
