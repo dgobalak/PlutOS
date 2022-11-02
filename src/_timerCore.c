@@ -18,16 +18,16 @@ void SysTick_Handler(void) {
 }
 
 void updateTimers(void) {
-	// Update time running
+	// Update timeRunning of current task
 	if (osThreads[osCurrentTask].timeRunning != 0) {
 		osThreads[osCurrentTask].timeRunning--;
 	}
 	
-	// Update time sleeping
+	// Update sleepTimeRemaining of all SLEEPING tasks
 	for (thread_id_t id = 0; id < threadNums; id++) {
 		if (osThreads[id].state == SLEEPING) {
-			osThreads[id].timeSleeping--;
-			if (osThreads[id].timeSleeping < 1) {
+			osThreads[id].sleepTimeRemaining--;
+			if (osThreads[id].sleepTimeRemaining < 1) {
 				osThreads[id].state = ACTIVE;
 			}
 		}
