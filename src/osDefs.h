@@ -20,6 +20,8 @@
 
 #define MAX_THREAD_RUNTIME_MS 20 
 
+#define IDLE_THREAD_ID 0
+
 /**
  * @brief The state of a thread
  * 
@@ -52,11 +54,6 @@ typedef int32_t thread_id_t;
  */
 typedef uint32_t ms_time_t;
 
-typedef enum thread_type {
-	PERIODIC = 0, // 0b000
-	NON_PERIODIC = 1, // 0b001
-} thread_type_t;
-
 /**
  * @brief The thread structure
  * @param threadStack The PSP of the thread
@@ -69,7 +66,6 @@ typedef struct osthread {
 	uint32_t * threadStack;
 	void (*threadFunc)(void * args);
 	thread_state_t state;
-	thread_type_t type;
 	ms_time_t timeRunning;
 	ms_time_t timeSleeping;
 	thread_priority_t priority; // TODO: Implement priorities

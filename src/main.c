@@ -6,47 +6,37 @@
 #include "_kernelCore.h"
 
 /**
- * @brief Test thread function that prints the value
- * of a counter and then yields
+ * @brief Test thread function
  * 
  * @param args Thread arguments
  */
 void task1(void* args) {
-	int x = 0;
 	while(1) {
-		x++;
 		printf("In Task 1\n");
+		osYield();
+	}
+}
+
+/**
+ * @brief Test thread function
+ * 
+ * @param args Thread arguments
+ */
+void task2(void* args) {
+	while(1) {
+		printf("In Task 2\n");
 		osSleep(1);
 	}
 }
 
 /**
- * @brief Test thread function that prints the value
- * of a counter and then yields
- * 
- * @param args Thread arguments
- */
-void task2(void* args) {
-	int y = 0;
-	while(1) {
-		y++;
-		printf("2\n");
-		osYield();
-	}
-}
-
-/**
- * @brief Test thread function that prints the value
- * of a counter and then yields
+ * @brief Test thread function
  * 
  * @param args Thread arguments
  */
 void task3(void* args) {
-	int z = 0;
 	while(1) {
-		z++;
-		printf("3\n");
-		osYield();
+		printf("In Task 3\n");
 	}
 }
 
@@ -58,7 +48,9 @@ int main(void) {
 	kernelInit();
 	
 	// Create threads; the priority values are not used yet
-	osNewThread(task1, NON_PERIODIC, LOWEST_PRIORITY);
+	osNewThread(task1, LOWEST_PRIORITY);
+	osNewThread(task2, LOWEST_PRIORITY);
+	osNewThread(task3, LOWEST_PRIORITY);
 
 	// Start kernel and start running first thread
 	osKernelStart();

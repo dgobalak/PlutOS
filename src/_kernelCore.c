@@ -41,7 +41,7 @@ void kernelInit(void) {
 	SysTick_Config(SYSTICK_TICKS);
 	
 	// Create the idle thread
-	osNewThread(osIdleTask, NON_PERIODIC, LOWEST_PRIORITY);
+	osNewThread(osIdleTask, LOWEST_PRIORITY);
 }
 
 void osSched(void) {
@@ -52,9 +52,16 @@ void osSched(void) {
 	thread_id_t id = 0;
 	do {
 		osCurrentTask = (osCurrentTask+1)%(threadNums);
+		
+		if (osCurrentTask == IDLE_THREAD_ID)
+				continue;
+		
 		id++;
 	}
 	while ((osThreads[osCurrentTask].state != ACTIVE) && (id < threadNums));
+	
+	if (id >= threadNums)
+			osCurrentTask = IDLE_THREAD_ID;
 	
 	printf(""); // DO NOT REMOVE. THIS PRINT PREVENTS A TIMING ISSUE
 	
