@@ -6,13 +6,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-volatile int osCurrentTask = -1; // Index for current running task
+int osCurrentTask = -1; // Index for current running task
 
-volatile osthread_t osThreads[MAX_THREADS]; // Array of all threads
+osthread_t osThreads[MAX_THREADS]; // Array of all threads
 
-volatile int threadNums; // number of created threads
+int threadNums; // number of created threads
 
-volatile bool osYieldMutex = true;
+bool osYieldMutex = true;
 
 uint32_t mspAddr; //the initial address of the MSP
 
@@ -25,7 +25,7 @@ uint32_t mspAddr; //the initial address of the MSP
  */
 static void osIdleTask(void* args) {
 	while(1) {
-		printf("Idle\n");
+		printf("In Idle Task\n");
 		osYield();
 	}
 }
@@ -48,20 +48,35 @@ void osSched(void) {
 	// Choose next thread to run
 	// TODO: Make use of the priority when choosing next task
 	// For now, just do round robin scheduling with no priorities
+	/*thread_id_t firstID = osCurrentTask;
+	osCurrentTask = (osCurrentTask+1)%(threadNums);
+	
+	while (osCurrentTask != firstID) {
+		if ((osThreads[osCurrentTask].state != ACTIVE) || (osCurrentTask == IDLE_THREAD_ID)) {
+			continue;
+		}
+		osCurrentTask = (osCurrentTask+1)%(threadNums);
+	}
+	
+	if (osThreads[osCurrentTask].state != ACTIVE) {
+		osCurrentTask = IDLE_THREAD_ID;
+	}*/
 	
 	thread_id_t id = 0;
+	
 	do {
 		osCurrentTask = (osCurrentTask+1)%(threadNums);
-		
-		if (osCurrentTask == IDLE_THREAD_ID)
-				continue;
-		
 		id++;
-	}
-	while ((osThreads[osCurrentTask].state != ACTIVE) && (id < threadNums));
+		
+		if (id >= threadNums) {
+			break;
+		}
+		
+	}	while ((osThreads[osCurrentTask].state != ACTIVE) || (osCurrentTask == IDLE_THREAD_ID));
 	
-	if (id >= threadNums)
+	if (osThreads[osCurrentTask].state != ACTIVE) {
 			osCurrentTask = IDLE_THREAD_ID;
+	}
 	
 	printf(""); // DO NOT REMOVE. THIS PRINT PREVENTS A TIMING ISSUE
 	
@@ -70,36 +85,38 @@ void osSched(void) {
 	osThreads[osCurrentTask].timeRunning = MAX_THREAD_RUNTIME_MS;
 }
 
-void osYield(void) {
-	osYieldMutex = false;
-	if(osCurrentTask >= 0) {
-		// Yield the current task (It could be in the RUNNING state or in the SLEEPING state)
-		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
-		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - 16*4); //we are about to push 16 uint32_t's
-	}
-	
-	osSched(); // Choose next task
-	
-	osYieldMutex = true;
-	
+static void pendPendSV(void) {
 	// Pend the PendSV interrupt
 	ICSR |= 1<<28; // Set PENDSVSET to 1 to make PendSV exception pending
 	__asm("isb");
 }
 
-void osYieldFromSysTick(void) {
-	// Set current thread to active state
-	if(osCurrentTask >= 0) {
-		// Yield the current task
-		osThreads[osCurrentTask].state = ACTIVE;	
-		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - 8*4); //we are about to push 8 uint32_t's
+static void yieldCurrentTask(uint8_t stackDiff) {
+	if (osCurrentTask >= 0) {
+		// Yield the current task (It could be in the RUNNING state or in the SLEEPING state)
+		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
+		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - stackDiff*4); //we are about to push `stackDiff` uint32_t's
 	}
+}
+
+void osYield(void) {
+	osYieldMutex = false;
+
+	yieldCurrentTask(16);
+	
+	osSched(); // Choose next task
+	
+	osYieldMutex = true;
+	
+	pendPendSV();
+}
+
+void osYieldFromSysTick(void) {
+	yieldCurrentTask(8);
 			
 	osSched(); // Choose next task
 
-	// Pend the PendSV interrupt
-	ICSR |= 1<<28; // Set PENDSVSET to 1 to make PendSV exception pending
-	__asm("isb");
+	pendPendSV();
 }
 
 void osSleep(ms_time_t sleepTime) {

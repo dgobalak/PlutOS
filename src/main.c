@@ -48,7 +48,7 @@ void task3(void* args) {
 void task4(void* args) {
 	while(1) {
 		printf("In Task 4\n");
-		osSleep(5);
+		osSleep(2);
 	}
 }
 
@@ -60,12 +60,11 @@ void task4(void* args) {
 void task5(void* args) {
 	while(1) {
 		printf("In Task 5\n");
-		osSleep(2);
+		osSleep(7);
 	}
 }
 
 #define LAB3_TEST1
-
 int main(void) {
 	// Always call this function at the start. It sets up various peripherals, the clock etc.
 	SystemInit();

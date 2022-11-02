@@ -7,7 +7,7 @@
 extern int osCurrentTask; // Current task ID
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 
-extern volatile int threadNums; // number of created threads
+extern int threadNums; // number of created threads
 extern uint32_t mspAddr; //the address of the MSP
 
 uint32_t* getMSPInitialLocation(void) {
