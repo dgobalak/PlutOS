@@ -40,6 +40,32 @@ void task3(void* args) {
 	}
 }
 
+/**
+ * @brief Test thread function
+ * 
+ * @param args Thread arguments
+ */
+void task4(void* args) {
+	while(1) {
+		printf("In Task 4\n");
+		osSleep(5);
+	}
+}
+
+/**
+ * @brief Test thread function
+ * 
+ * @param args Thread arguments
+ */
+void task5(void* args) {
+	while(1) {
+		printf("In Task 5\n");
+		osSleep(2);
+	}
+}
+
+#define LAB3_TEST1
+
 int main(void) {
 	// Always call this function at the start. It sets up various peripherals, the clock etc.
 	SystemInit();
@@ -47,11 +73,16 @@ int main(void) {
 	// Initialize the kernel.
 	kernelInit();
 	
+#ifdef LAB3_TEST1
 	// Create threads; the priority values are not used yet
 	osNewThread(task1, LOWEST_PRIORITY);
 	osNewThread(task2, LOWEST_PRIORITY);
 	osNewThread(task3, LOWEST_PRIORITY);
-
+#else
+	osNewThread(task4, LOWEST_PRIORITY);
+	osNewThread(task5, LOWEST_PRIORITY);
+#endif
+	
 	// Start kernel and start running first thread
 	osKernelStart();
 	

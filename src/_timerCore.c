@@ -30,7 +30,7 @@ void updateTimers(void) {
 		if (osThreads[id].state == SLEEPING) {
 				osThreads[id].timeSleeping--;
 			if (osThreads[id].timeSleeping < 1) {
-				printf("");
+				printf(""); // DO NOT REMOVE
 				osThreads[id].state = ACTIVE;
 			}
 		}
