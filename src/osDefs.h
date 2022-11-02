@@ -18,7 +18,7 @@
 #define SYSTICK_TICKS (SystemCoreClock/1000) // Systick ever 1ms
 #define TIMESLICE_MS 1
 
-#define MAX_TIME_UNTIL_SWITCH_MS 20 
+#define MAX_THREAD_RUNTIME_MS 20 
 
 /**
  * @brief The state of a thread

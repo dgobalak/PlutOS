@@ -6,11 +6,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-volatile int osCurrentTask = 0; // Index for current running task
+volatile int osCurrentTask = -1; // Index for current running task
 
 volatile osthread_t osThreads[MAX_THREADS]; // Array of all threads
 
-int threadNums; // number of created threads
+volatile int threadNums; // number of created threads
 
 volatile bool osYieldMutex = true;
 
@@ -25,7 +25,7 @@ uint32_t mspAddr; //the initial address of the MSP
  */
 static void osIdleTask(void* args) {
 	while(1) {
-		printf("0\n");
+		printf("Idle\n");
 		osYield();
 	}
 }
@@ -45,21 +45,29 @@ void kernelInit(void) {
 }
 
 void osSched(void) {
-	
 	// Choose next thread to run
 	// TODO: Make use of the priority when choosing next task
 	// For now, just do round robin scheduling with no priorities
-	osCurrentTask = (osCurrentTask+1)%(threadNums);
+	
+	thread_id_t id = 0;
+	do {
+		osCurrentTask = (osCurrentTask+1)%(threadNums);
+		id++;
+	}
+	while ((osThreads[osCurrentTask].state != ACTIVE) && (id < threadNums));
+	
 	printf(""); // DO NOT REMOVE. THIS PRINT PREVENTS A TIMING ISSUE
+	
+	// Configure thread
 	osThreads[osCurrentTask].state = RUNNING;
-	osThreads[osCurrentTask].timeRunning = 0;
+	osThreads[osCurrentTask].timeRunning = MAX_THREAD_RUNTIME_MS;
 }
 
 void osYield(void) {
 	osYieldMutex = false;
 	if(osCurrentTask >= 0) {
-		// Yield the current task
-		osThreads[osCurrentTask].state = ACTIVE;	
+		// Yield the current task (It could be in the RUNNING state or in the SLEEPING state)
+		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
 		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - 16*4); //we are about to push 16 uint32_t's
 	}
 	
@@ -89,6 +97,7 @@ void osYieldFromSysTick(void) {
 
 void osSleep(ms_time_t sleepTime) {
 	osThreads[osCurrentTask].timeSleeping = sleepTime;
+	osThreads[osCurrentTask].state = SLEEPING;
 	osYield();
 }
 

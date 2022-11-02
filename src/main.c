@@ -15,8 +15,8 @@ void task1(void* args) {
 	int x = 0;
 	while(1) {
 		x++;
-		printf("1\n");
-		osYield();
+		printf("In Task 1\n");
+		osSleep(1);
 	}
 }
 
@@ -59,8 +59,6 @@ int main(void) {
 	
 	// Create threads; the priority values are not used yet
 	osNewThread(task1, NON_PERIODIC, LOWEST_PRIORITY);
-	osNewThread(task2, NON_PERIODIC, LOWEST_PRIORITY);
-	osNewThread(task3, NON_PERIODIC, LOWEST_PRIORITY);
 
 	// Start kernel and start running first thread
 	osKernelStart();
