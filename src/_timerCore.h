@@ -5,6 +5,6 @@
  * @brief Update the timeRunning and sleepTimeRemaining elements in the
  * thread structs
  */
-static void updateTimers(void);
+void updateTimers(void);
 
 #endif // _TIMER_CORE_H
