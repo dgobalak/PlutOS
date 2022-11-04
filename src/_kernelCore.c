@@ -48,7 +48,7 @@ void osSched(void) {
 	// For now, just do round robin scheduling with no priorities
 	
 	// Iterate through tasks and find one that's ACTIVE, but not the idle task
-	thread_id_t numTasksChecked = 0;
+	int numTasksChecked = 0;
 	do {
 		osCurrentTask = (osCurrentTask+1)%(threadNums);
 		numTasksChecked++;
