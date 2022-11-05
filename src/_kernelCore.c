@@ -1,17 +1,31 @@
 #include "_kernelCore.h"
+#include "_threadsCore.h"
 #include "osDefs.h"
 
 #include <LPC17xx.h>
 #include <stdbool.h>
+#include <stdio.h>
 
-int osCurrentTask = 0; // Index for current running task
-
+// GLOBAL VARIABLES
 osthread_t osThreads[MAX_THREADS]; // Array of all threads
+int osCurrentTask = -1; // Index for current running task
+int threadNums; // Number of created threads
+bool osYieldMutex = true; // Mutex to protect against concurrent yield
+uint32_t mspAddr; // The initial address of the MSP
 
-int threadNums; // number of created threads
-int osNumThreadsRunning; // number of running threads
-
-uint32_t mspAddr; //the initial address of the MSP
+/**
+ * @brief Idle task that prints a message and then yields
+ * @note It exists so that there's at least 1 function that
+ * can be run when there are no other threads to run
+ * 
+ * @param args Thread arguments
+ */
+static void osIdleTask(void* args) {
+	while(1) {
+		printf("In Idle Task\n");
+		osYield();
+	}
+}
 
 void kernelInit(void) {
 	// Set PendSV to the weakest priority we can set
@@ -20,18 +34,85 @@ void kernelInit(void) {
 	// Initialize the address of the MSP
 	uint32_t* MSP_Original = 0;
 	mspAddr = *MSP_Original;
+	
+	// Configure the SysTick interrupt
+	SysTick_Config(SYSTICK_TICKS);
+	
+	// Create the idle thread
+	osNewThread(osIdleTask, LOWEST_PRIORITY);
+}
+
+void osSched(void) {
+	// Choose next thread to run
+	// TODO: Make use of the priority when choosing next task
+	// For now, just do round robin scheduling with no priorities
+	
+	// Iterate through tasks and find one that's ACTIVE, but not the idle task
+	int numTasksChecked = 0;
+	do {
+		osCurrentTask = (osCurrentTask+1)%(threadNums);
+		numTasksChecked++;
+		
+		if (numTasksChecked >= threadNums) {
+			break;
+		}
+		
+	}	while ((osThreads[osCurrentTask].state != ACTIVE) || (osCurrentTask == IDLE_THREAD_ID));
+	
+	// If no ACTIVE task is found, switch to the idle task
+	if (osThreads[osCurrentTask].state != ACTIVE) {
+			osCurrentTask = IDLE_THREAD_ID;
+	}
+	
+	printf(""); // DO NOT REMOVE. THIS PRINT PREVENTS A TIMING ISSUE
+	
+	// Configure thread
+	osThreads[osCurrentTask].state = RUNNING;
+	osThreads[osCurrentTask].timeRunning = MAX_THREAD_RUNTIME_MS;
+}
+
+void pendPendSV(void) {
+	// Pend the PendSV interrupt
+	ICSR |= 1<<28; // Set PENDSVSET to 1 to make PendSV exception pending
+	__asm("isb");
+}
+
+void yieldCurrentTask(uint8_t stackDiff) {
+	if (osCurrentTask >= 0) {
+		// Yield the current task (It could be in the RUNNING state or in the SLEEPING state)
+		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
+		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - stackDiff*4); // We are about to push `stackDiff` uint32_t's
+	}
 }
 
 void osYield(void) {
-	if(osCurrentTask >= 0) {
-		// Yield the current task
-		osThreads[osCurrentTask].state = WAITING;	
-		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - 16*4); //we are about to push 16 uint32_t's
-	}
+	// The mutex is used to reduce the likelihood that the osYieldSysTick is called
+	// during a regular osYield
+	osYieldMutex = false;
+
+	yieldCurrentTask(16);
 	
-	// Set PENDSVSET to 1 to make PendSV exception pending
-	ICSR |= 1<<28;
-	__asm("isb");
+	osSched(); // Choose next task
+	
+	osYieldMutex = true;
+	
+	pendPendSV();
+}
+
+void osYieldFromSysTick(void) {
+	// This is called by the SysTick Handler
+	yieldCurrentTask(8);
+			
+	osSched(); // Choose next task
+
+	pendPendSV();
+}
+
+void osSleep(ms_time_t sleepTime) {
+	// Set current task to the SLEEPING state
+	osThreads[osCurrentTask].sleepTimeRemaining = sleepTime;
+	osThreads[osCurrentTask].state = SLEEPING;
+	osYield();
 }
 
 bool osKernelStart() {
@@ -45,20 +126,13 @@ bool osKernelStart() {
 	return false;
 }
 
-void setThreadingWithPSP(uint32_t* threadStack)
-{
+void setThreadingWithPSP(uint32_t* threadStack) {
 	__set_PSP((uint32_t)threadStack); // Set PSP to threadStack
 	__set_CONTROL(1<<1); // Switch to threading mode
-	
 }
 
 int switchTask(void){
-	// TODO: Make use of the priority when choosing next task
-	// For now, just do round robin scheduling with no priorities
-	osCurrentTask = (osCurrentTask+1)%(threadNums);
-	osThreads[osCurrentTask].state = ACTIVE;
-	
-	__set_PSP((uint32_t)osThreads[osCurrentTask].threadStack); //set the new PSP
+	__set_PSP((uint32_t)osThreads[osCurrentTask].threadStack); // Set the new PSP
 
 	// The return value can be accessed in the assembly code. Access it from r0 before overwriting r0
 	return 1; 

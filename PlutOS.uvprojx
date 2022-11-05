@@ -10,7 +10,7 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060960::V5.06 update 7 (build 960)::ARMCC</pCCUsed>
+      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -399,11 +399,6 @@
               <FilePath>.\src\_threadsCore.c</FilePath>
             </File>
             <File>
-              <FileName>_threadsCore.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\src\_threadsCore.h</FilePath>
-            </File>
-            <File>
               <FileName>_kernelCore.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\_kernelCore.c</FilePath>
@@ -427,6 +422,21 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>_timerCore.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\_timerCore.c</FilePath>
+            </File>
+            <File>
+              <FileName>_threadsCore.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>C:\Users\dgobalak\Desktop\PlutOS\src\_threadsCore.h</FilePath>
+            </File>
+            <File>
+              <FileName>_timerCore.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\_timerCore.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -488,6 +498,12 @@
     <Layers>
       <Layer>
         <LayName>PlutOS</LayName>
+        <LayDesc></LayDesc>
+        <LayUrl></LayUrl>
+        <LayKeys></LayKeys>
+        <LayCat></LayCat>
+        <LayLic></LayLic>
+        <LayTarg>0</LayTarg>
         <LayPrjMark>1</LayPrjMark>
       </Layer>
     </Layers>

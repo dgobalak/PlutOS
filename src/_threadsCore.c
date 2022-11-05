@@ -7,9 +7,8 @@
 extern int osCurrentTask; // Current task ID
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 
-extern int threadNums; // number of created threads
-extern int osNumThreadsRunning; // number of running threads
-extern uint32_t mspAddr; //the address of the MSP
+extern int threadNums; // Number of created threads
+extern uint32_t mspAddr; // The address of the MSP
 
 uint32_t* getMSPInitialLocation(void) {
 	uint32_t* MSP = 0; // Initial MSP is stored at address 0
@@ -18,17 +17,12 @@ uint32_t* getMSPInitialLocation(void) {
 
 uint32_t* getNewThreadStack(uint32_t offset) {
 	static uint8_t numStacks = 0;
-	
-	// Check if offset is divisible by stack size
-	if (offset % THREAD_STACK_SIZE != 0)
-		return NULL;
 
 	// Check if we have reached the maximum total stack size
 	if (MAX_POOL_SIZE < (numStacks+1)*(THREAD_STACK_SIZE))
 		return NULL;
 	
-	// Since the offset is a multiple of the default stack size (512), 
-	// it's also a multiple of 8
+	// If offset isn't a multiple of 8, it's a multiple of 4
 	if(offset % 8 != 0)
 		offset = offset + sizeof(uint32_t); // The stack will either be divisible by 8 or 4
 	
@@ -38,14 +32,17 @@ uint32_t* getNewThreadStack(uint32_t offset) {
 	return PSP;
 }
 
-int osNewThread(void (*taskFunc)(void*args), thread_priority_t priority) {
+thread_id_t osNewThread(void (*taskFunc)(void*args), thread_priority_t priority) {
 	// TODO: Make use of priority
 	if(threadNums < MAX_THREADS) {
 		// Configure the thread in the array
-		osThreads[threadNums].state = WAITING;
-		osThreads[threadNums].threadFunc = taskFunc;
 		osThreads[threadNums].threadStack = getNewThreadStack(MSR_STACK_SIZE + threadNums*THREAD_STACK_SIZE);//(uint32_t*)((mspAddr - MSR_STACK_SIZE) - (threadNums)*THREAD_STACK_SIZE);
+		osThreads[threadNums].threadFunc = taskFunc;
+		osThreads[threadNums].state = ACTIVE;
+		osThreads[threadNums].timeRunning = 0;
+		osThreads[threadNums].sleepTimeRemaining = 0;
 		osThreads[threadNums].priority = priority;
+		
 		
 		// Now we need to set up the stack; it should 'look' like the thread is already running
 		
@@ -78,9 +75,7 @@ int osNewThread(void (*taskFunc)(void*args), thread_priority_t priority) {
 		
 		// Now the stack is set up, the thread's SP is correct, since we've been decrementing it.
 		threadNums++;
-		osNumThreadsRunning++;
-		return threadNums - 1; // Return the thread index
+		return (thread_id_t)(threadNums - 1); // Return the thread index
 	}
 	return -1;
 }
-

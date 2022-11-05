@@ -6,48 +6,65 @@
 #include "_kernelCore.h"
 
 /**
- * @brief Test thread function that prints the value
- * of a counter and then yields
+ * @brief Test thread function
  * 
  * @param args Thread arguments
  */
 void task1(void* args) {
-	int x = 0;
 	while(1) {
-		x++;
-		printf("In task 1. x is: %d\n",x);
+		printf("In Task 1\n");
 		osYield();
 	}
 }
 
 /**
- * @brief Test thread function that prints the value
- * of a counter and then yields
+ * @brief Test thread function
  * 
  * @param args Thread arguments
  */
 void task2(void* args) {
-	int y = 0;
 	while(1) {
-		y++;
-		printf("In task 2. y is: %d\n",y);
-		osYield();
+		printf("In Task 2\n");
+		osSleep(10);
 	}
 }
 
 /**
- * @brief Idle task that prints a message and then yields
- * @note It exists so that there's at least 1 function that
- * can be run when there are no other threads to run
+ * @brief Test thread function
  * 
  * @param args Thread arguments
  */
-void osIdleTask(void* args) {
+void task3(void* args) {
 	while(1) {
-		printf("in task 0\n");
-		osYield();
+		printf("In Task 3\n");
 	}
 }
+
+/**
+ * @brief Test thread function
+ * 
+ * @param args Thread arguments
+ */
+void task4(void* args) {
+	while(1) {
+		printf("In Task 4\n");
+		osSleep(2);
+	}
+}
+
+/**
+ * @brief Test thread function
+ * 
+ * @param args Thread arguments
+ */
+void task5(void* args) {
+	while(1) {
+		printf("In Task 5\n");
+		osSleep(7);
+	}
+}
+
+// #define LAB3_TEST1
 
 int main(void) {
 	// Always call this function at the start. It sets up various peripherals, the clock etc.
@@ -56,10 +73,15 @@ int main(void) {
 	// Initialize the kernel.
 	kernelInit();
 	
+#ifdef LAB3_TEST1
 	// Create threads; the priority values are not used yet
-	osNewThread(osIdleTask, LOWEST_PRIORITY);
 	osNewThread(task1, LOWEST_PRIORITY);
 	osNewThread(task2, LOWEST_PRIORITY);
+	osNewThread(task3, LOWEST_PRIORITY);
+#else
+	osNewThread(task4, LOWEST_PRIORITY);
+	osNewThread(task5, LOWEST_PRIORITY);
+#endif
 	
 	// Start kernel and start running first thread
 	osKernelStart();
