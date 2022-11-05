@@ -6,25 +6,25 @@
 #include <stdio.h>
 
 extern bool osYieldMutex; // Mutex to protect yield
-extern int osCurrentTask; // Index for current running task
+extern thread_id_t osCurrentTask; // Index for current running task
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
-extern int threadNums; // number of created threads
+extern uint32_t totalThreads; // number of created threads
 
 void SysTick_Handler(void) {
 	updateTimers();
-	if (osYieldMutex && !osThreads[osCurrentTask].timeRunning) {
+	if (osYieldMutex && !osThreads[osCurrentTask].runTimeRemaining) {
 		osYieldFromSysTick();
 	}
 }
 
 void updateTimers(void) {
-	// Update timeRunning of current task
-	if (osThreads[osCurrentTask].timeRunning != 0) {
-		osThreads[osCurrentTask].timeRunning--;
+	// Update runTimeRemaining of current task
+	if (osThreads[osCurrentTask].runTimeRemaining != 0) {
+		osThreads[osCurrentTask].runTimeRemaining--;
 	}
 	
 	// Update sleepTimeRemaining of all SLEEPING tasks
-	for (thread_id_t id = 0; id < threadNums; id++) {
+	for (thread_id_t id = 0; id < totalThreads; id++) {
 		if (osThreads[id].state == SLEEPING) {
 			osThreads[id].sleepTimeRemaining--;
 			if (osThreads[id].sleepTimeRemaining < 1) {

@@ -5,11 +5,12 @@
 #include <LPC17xx.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdint.h>
 
 // GLOBAL VARIABLES
 osthread_t osThreads[MAX_THREADS]; // Array of all threads
-int osCurrentTask = -1; // Index for current running task
-int threadNums; // Number of created threads
+thread_id_t osCurrentTask = -1; // Index for current running task
+uint32_t totalThreads = 0; // Number of created threads
 bool osYieldMutex = true; // Mutex to protect against concurrent yield
 uint32_t mspAddr; // The initial address of the MSP
 
@@ -50,10 +51,10 @@ void osSched(void) {
 	// Iterate through tasks and find one that's ACTIVE, but not the idle task
 	int numTasksChecked = 0;
 	do {
-		osCurrentTask = (osCurrentTask+1)%(threadNums);
+		osCurrentTask = (osCurrentTask+1)%(totalThreads);
 		numTasksChecked++;
 		
-		if (numTasksChecked >= threadNums) {
+		if (numTasksChecked >= totalThreads) {
 			break;
 		}
 		
@@ -68,7 +69,7 @@ void osSched(void) {
 	
 	// Configure thread
 	osThreads[osCurrentTask].state = RUNNING;
-	osThreads[osCurrentTask].timeRunning = MAX_THREAD_RUNTIME_MS;
+	osThreads[osCurrentTask].runTimeRemaining = MAX_THREAD_RUNTIME_MS;
 }
 
 void pendPendSV(void) {
@@ -116,7 +117,7 @@ void osSleep(ms_time_t sleepTime) {
 }
 
 bool osKernelStart() {
-	if(threadNums > 0) {
+	if(totalThreads > 0) {
 		osCurrentTask = -1;
 		__set_CONTROL(1<<1);
 		__set_PSP((uint32_t)osThreads[0].threadStack);

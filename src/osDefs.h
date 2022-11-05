@@ -62,7 +62,7 @@ typedef uint32_t ms_time_t;
  * @param threadStack The PSP of the thread
  * @param threadFunc The function that the thread will run
  * @param state The state of the thread
- * @param timeRunning The remaining time the thread can run before being pre-empted
+ * @param runTimeRemaining The remaining time the thread can run before being pre-empted
  * @param sleepTimeRemaining The remaining time in ms that the thread must sleep
  * @param priority The priority of the thread (Not used)
  */
@@ -70,7 +70,7 @@ typedef struct osthread {
 	volatile uint32_t * threadStack;
 	void (*threadFunc)(void * args);
 	volatile thread_state_t state;
-	volatile ms_time_t timeRunning;
+	volatile ms_time_t runTimeRemaining;
 	volatile ms_time_t sleepTimeRemaining;
 	thread_priority_t priority; // TODO: Implement priorities
 } osthread_t;
