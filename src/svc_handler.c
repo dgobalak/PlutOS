@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-static void svcYield(void) {
+void svcYield(void) {
 	yieldCurrentTask(8);
 	osSched(); // Choose next task			
 	pendPendSV();

@@ -4,6 +4,7 @@
 #include "osDefs.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
 extern thread_id_t osCurrentTask; // Index for current running task
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
@@ -14,22 +15,32 @@ void SysTick_Handler(void) {
 }
 
 void updateTimers(void) {
-	// Update sleepTimeRemaining of all SLEEPING tasks, and update deadlines of all ACTIVE tasks
+	// Update sleep and deadline timers for all threads
+
+	bool switchRequired = false; // Only used if a thread wakes up with a deadline earlier than the current thread
+
 	for (thread_id_t id = 0; id < totalThreads; id++) {
 		if (osThreads[id].state == SLEEPING) {
 			osThreads[id].sleepTimeRemaining--;
-			if (osThreads[id].sleepTimeRemaining < 1) {
+
+			if (osThreads[id].sleepTimeRemaining == 0) { // Thread is ready to wake up
 				osThreads[id].state = ACTIVE;
 				osThreads[id].deadlineCounter = osThreads[id].deadline;
+
 				if (osThreads[id].deadlineCounter < osThreads[osCurrentTask].deadlineCounter)
-					osYield();
+					switchRequired = true;
 			}
+
 		} else if (osThreads[id].state == ACTIVE) {
-			osThreads[id].deadlineCounter--;
+			if (osThreads[id].deadlineCounter > 0)
+				osThreads[id].deadlineCounter--;
 			
-			if (osThreads[id].deadlineCounter < 1) {
-				printf("Deadline not met for Thread %d", id);
+			if (osThreads[id].deadlineCounter == 0) {
+				printf("Deadline not met for Thread %d\n", id);
 			}
 		}	
 	}
+
+	if (switchRequired)
+		osYield();
 }

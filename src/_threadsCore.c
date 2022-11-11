@@ -11,7 +11,7 @@ extern uint32_t totalThreads; // Number of created threads
 extern uint32_t mspAddr; // The address of the MSP
 
 uint32_t* getMSPInitialLocation(void) {
-	uint32_t* MSP = 0; // Initial MSP is stored at address 0
+	uint32_t* MSP = MSP_STORAGE_ADDR; // Initial MSP is stored at address 0
 	return (uint32_t*)*MSP;
 }
 
@@ -43,8 +43,7 @@ thread_id_t osNewPeriodicThread(void (*taskFunc)(void*args), ms_time_t deadline,
 }
 	
 thread_id_t osNewThread(void (*taskFunc)(void*args), ms_time_t deadline) {
-	// TODO: Make use of priority
-	if(totalThreads < MAX_THREADS) {
+	if (totalThreads < MAX_THREADS) {
 		// Configure the thread in the array
 		osThreads[totalThreads].threadStack = getNewThreadStack(MSR_STACK_SIZE + totalThreads*THREAD_STACK_SIZE);//(uint32_t*)((mspAddr - MSR_STACK_SIZE) - (totalThreads)*THREAD_STACK_SIZE);
 		osThreads[totalThreads].threadFunc = taskFunc;

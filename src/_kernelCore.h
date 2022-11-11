@@ -6,6 +6,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define THREADING_MODE 1<<1
+#define SET_PENDSVET 1<<28
+
 /**
  * @brief Initializes memory structures and interrupts necessary to run the kernel
  * 
