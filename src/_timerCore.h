@@ -2,7 +2,7 @@
 #define _TIMER_CORE_H
 
 /**
- * @brief Update the timeRunning and sleepTimeRemaining elements in the
+ * @brief Update the runTimeRemaining and sleepTimeRemaining elements in the
  * thread structs
  */
 void updateTimers(void);
