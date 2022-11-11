@@ -23,16 +23,10 @@ void pendPendSV(void);
 void yieldCurrentTask(uint8_t stackDiff);
 
 /**
- * @brief Called by task to yield current task (Switch to next available task)
+ * @brief Called to yield current task (Switch to next available task)
  * 
  */
 void osYield(void);
-
-/**
- * @brief Called by SysTick Interrupt to yield current task if the task has run for
- * over MAX_THREAD_RUNTIME_MS
- */
-void osYieldFromSysTick(void);
 
 /**
  * @brief Make the current task sleep for `sleepTime` ms

@@ -64,7 +64,7 @@ void task5(void* args) {
 	}
 }
 
-// #define LAB3_TEST1
+#define LAB3_TEST1
 
 int main(void) {
 	// Always call this function at the start. It sets up various peripherals, the clock etc.

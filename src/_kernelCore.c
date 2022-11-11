@@ -1,5 +1,6 @@
 #include "_kernelCore.h"
 #include "_threadsCore.h"
+#include "svc_handler.h"
 #include "osDefs.h"
 
 #include <LPC17xx.h>
@@ -11,7 +12,6 @@
 osthread_t osThreads[MAX_THREADS]; // Array of all threads
 thread_id_t osCurrentTask = -1; // Index for current running task
 uint32_t totalThreads = 0; // Number of created threads
-bool osYieldMutex = true; // Mutex to protect against concurrent yield
 uint32_t mspAddr; // The initial address of the MSP
 
 /**
@@ -29,8 +29,9 @@ static void osIdleTask(void* args) {
 }
 
 void kernelInit(void) {
-	// Set PendSV to the weakest priority we can set
-	SHPR3 |= 0xFF << 16;
+	SHPR3 |= PENDSV_PRIORITY << 16; // Set PendSV priority
+	SHPR3 |= SYSTICK_PRIORITY << 24; // Set SysTick priority
+	SHPR2 |= SVC_PRIORITY << 24; // Set SVC priority
 	
 	// Initialize the address of the MSP
 	uint32_t* MSP_Original = 0;
@@ -87,26 +88,7 @@ void yieldCurrentTask(uint8_t stackDiff) {
 }
 
 void osYield(void) {
-	// The mutex is used to reduce the likelihood that the osYieldSysTick is called
-	// during a regular osYield
-	osYieldMutex = false;
-
-	yieldCurrentTask(16);
-	
-	osSched(); // Choose next task
-	
-	osYieldMutex = true;
-	
-	pendPendSV();
-}
-
-void osYieldFromSysTick(void) {
-	// This is called by the SysTick Handler
-	yieldCurrentTask(8);
-			
-	osSched(); // Choose next task
-
-	pendPendSV();
+	__ASM(SVC_YIELD_SWITCH_CMD);
 }
 
 void osSleep(ms_time_t sleepTime) {

@@ -11,6 +11,12 @@
 #define THREAD_STACK_SIZE 0x200 // Size of each thread's stack
 
 #define SHPR3 *(uint32_t*)0xE000ED20 // System Handler Priority Register 3
+#define SHPR2 *(uint32_t*)0xE000ED1C // System Handler Priority Register 2
+
+#define SVC_PRIORITY 0xFDU
+#define PENDSV_PRIORITY 0xFEU
+#define SYSTICK_PRIORITY 0xFFU
+
 #define ICSR *(uint32_t*)0xE000ED04 // Interrupt Control and State Register
 
 #define LOWEST_PRIORITY 0 // Lowest priority for a thread

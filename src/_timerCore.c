@@ -5,15 +5,14 @@
 
 #include <stdio.h>
 
-extern bool osYieldMutex; // Mutex to protect yield
 extern thread_id_t osCurrentTask; // Index for current running task
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 extern uint32_t totalThreads; // number of created threads
 
 void SysTick_Handler(void) {
 	updateTimers();
-	if (osYieldMutex && !osThreads[osCurrentTask].runTimeRemaining) {
-		osYieldFromSysTick();
+	if (!osThreads[osCurrentTask].runTimeRemaining) {
+		osYield();
 	}
 }
 
