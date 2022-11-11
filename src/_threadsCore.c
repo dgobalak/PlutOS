@@ -32,17 +32,28 @@ uint32_t* getNewThreadStack(uint32_t offset) {
 	return PSP;
 }
 
-thread_id_t osNewThread(void (*taskFunc)(void*args), thread_priority_t priority) {
+thread_id_t osNewPeriodicThread(void (*taskFunc)(void*args), ms_time_t deadline, ms_time_t period) {
+	thread_id_t id = osNewThread(taskFunc, deadline);
+	if (id > -1) {
+		osThreads[totalThreads].period = period;
+		osThreads[totalThreads].isPeriodic = true;
+	}
+	
+	return id;
+}
+	
+thread_id_t osNewThread(void (*taskFunc)(void*args), ms_time_t deadline) {
 	// TODO: Make use of priority
 	if(totalThreads < MAX_THREADS) {
 		// Configure the thread in the array
 		osThreads[totalThreads].threadStack = getNewThreadStack(MSR_STACK_SIZE + totalThreads*THREAD_STACK_SIZE);//(uint32_t*)((mspAddr - MSR_STACK_SIZE) - (totalThreads)*THREAD_STACK_SIZE);
 		osThreads[totalThreads].threadFunc = taskFunc;
 		osThreads[totalThreads].state = ACTIVE;
-		osThreads[totalThreads].runTimeRemaining = 0;
 		osThreads[totalThreads].sleepTimeRemaining = 0;
-		osThreads[totalThreads].priority = priority;
-		
+		osThreads[totalThreads].deadline = deadline;
+		osThreads[totalThreads].deadlineCounter = deadline;
+		osThreads[totalThreads].period = 0;
+		osThreads[totalThreads].isPeriodic = false;
 		
 		// Now we need to set up the stack; it should 'look' like the thread is already running
 		

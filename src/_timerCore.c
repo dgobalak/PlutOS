@@ -11,24 +11,25 @@ extern uint32_t totalThreads; // number of created threads
 
 void SysTick_Handler(void) {
 	updateTimers();
-	if (!osThreads[osCurrentTask].runTimeRemaining) {
-		osYield();
-	}
 }
 
 void updateTimers(void) {
-	// Update runTimeRemaining of current task
-	if (osThreads[osCurrentTask].runTimeRemaining != 0) {
-		osThreads[osCurrentTask].runTimeRemaining--;
-	}
-	
-	// Update sleepTimeRemaining of all SLEEPING tasks
+	// Update sleepTimeRemaining of all SLEEPING tasks, and update deadlines of all ACTIVE tasks
 	for (thread_id_t id = 0; id < totalThreads; id++) {
 		if (osThreads[id].state == SLEEPING) {
 			osThreads[id].sleepTimeRemaining--;
 			if (osThreads[id].sleepTimeRemaining < 1) {
 				osThreads[id].state = ACTIVE;
+				osThreads[id].deadlineCounter = osThreads[id].deadline;
+				if (osThreads[id].deadlineCounter < osThreads[osCurrentTask].deadlineCounter)
+					osYield();
 			}
-		}
+		} else if (osThreads[id].state == ACTIVE) {
+			osThreads[id].deadlineCounter--;
+			
+			if (osThreads[id].deadlineCounter < 1) {
+				printf("Deadline not met for Thread %d", id);
+			}
+		}	
 	}
 }

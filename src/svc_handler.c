@@ -15,6 +15,7 @@ void SVC_Handler_Main(uint32_t *svc_args) {
 	switch(call) {
 		case SVC_YIELD_SWITCH:
 			svcYield();
+			break;
 	}
 
 }

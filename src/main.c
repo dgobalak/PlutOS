@@ -75,9 +75,9 @@ int main(void) {
 	
 #ifdef LAB3_TEST1
 	// Create threads; the priority values are not used yet
-	osNewThread(task1, LOWEST_PRIORITY);
-	osNewThread(task2, LOWEST_PRIORITY);
-	osNewThread(task3, LOWEST_PRIORITY);
+	osNewThread(task1, 15);
+	osNewThread(task2, 15);
+	osNewPeriodicThread(task3, 15, 1);
 #else
 	osNewThread(task4, LOWEST_PRIORITY);
 	osNewThread(task5, LOWEST_PRIORITY);

@@ -41,7 +41,7 @@ void kernelInit(void) {
 	SysTick_Config(SYSTICK_TICKS);
 	
 	// Create the idle thread
-	osNewThread(osIdleTask, LOWEST_PRIORITY);
+	osNewThread(osIdleTask, UINT32_MAX);
 }
 
 void osSched(void) {
@@ -50,27 +50,27 @@ void osSched(void) {
 	// For now, just do round robin scheduling with no priorities
 	
 	// Iterate through tasks and find one that's ACTIVE, but not the idle task
-	int numTasksChecked = 0;
-	do {
-		osCurrentTask = (osCurrentTask+1)%(totalThreads);
-		numTasksChecked++;
-		
-		if (numTasksChecked >= totalThreads) {
-			break;
+	ms_time_t earliest = UINT32_MAX;
+	thread_id_t index = -1;
+	for (thread_id_t id = 0; id < totalThreads; id++) {
+		if (osThreads[id].state == ACTIVE){
+			if (osThreads[id].deadline < earliest) {
+				earliest = osThreads[id].deadline;
+				index = id;
+			}
 		}
-		
-	}	while ((osThreads[osCurrentTask].state != ACTIVE) || (osCurrentTask == IDLE_THREAD_ID));
-	
-	// If no ACTIVE task is found, switch to the idle task
-	if (osThreads[osCurrentTask].state != ACTIVE) {
-			osCurrentTask = IDLE_THREAD_ID;
 	}
 	
-	printf(""); // DO NOT REMOVE. THIS PRINT PREVENTS A TIMING ISSUE
 	
+	// If no ACTIVE task is found, switch to the idle task
+	if (index == -1) {
+			osCurrentTask = IDLE_THREAD_ID;
+	} else {
+		osCurrentTask = index;
+	}
+		
 	// Configure thread
 	osThreads[osCurrentTask].state = RUNNING;
-	osThreads[osCurrentTask].runTimeRemaining = MAX_THREAD_RUNTIME_MS;
 }
 
 void pendPendSV(void) {
@@ -88,6 +88,9 @@ void yieldCurrentTask(uint8_t stackDiff) {
 }
 
 void osYield(void) {
+	if (osThreads[osCurrentTask].isPeriodic)
+		osSleep(osThreads[osCurrentTask].period);
+	osThreads[osCurrentTask].deadlineCounter = osThreads[osCurrentTask].deadline;
 	__ASM(SVC_YIELD_SWITCH_CMD);
 }
 

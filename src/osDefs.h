@@ -2,6 +2,7 @@
 #define OS_DEFS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <LPC17xx.h>
 
 #define MAX_THREADS 10 // Maximum number of threads that can be created
@@ -18,8 +19,6 @@
 #define SYSTICK_PRIORITY 0xFFU
 
 #define ICSR *(uint32_t*)0xE000ED04 // Interrupt Control and State Register
-
-#define LOWEST_PRIORITY 0 // Lowest priority for a thread
 
 #define SYSTICK_MS 1 // Number of ms between each SysTick interrupt
 #define SYSTICK_SEC (SYSTICK_MS/1000.0) // Number of seconds between each SysTick interrupt
@@ -45,13 +44,6 @@ typedef enum thread_state {
 } thread_state_t;
 
 /**
- * @brief The priority value of a thread
- * @note Larger number results in a higher priority
- * 
- */
-typedef uint32_t thread_priority_t;
-
-/**
  * @brief The ID number of a thread; the index in the thread array
  * 
  */
@@ -68,7 +60,6 @@ typedef uint32_t ms_time_t;
  * @param threadStack The PSP of the thread
  * @param threadFunc The function that the thread will run
  * @param state The state of the thread
- * @param runTimeRemaining The remaining time the thread can run before being pre-empted
  * @param sleepTimeRemaining The remaining time in ms that the thread must sleep
  * @param priority The priority of the thread (Not used)
  */
@@ -76,9 +67,11 @@ typedef struct osthread {
 	volatile uint32_t * threadStack;
 	void (*threadFunc)(void * args);
 	volatile thread_state_t state;
-	volatile ms_time_t runTimeRemaining;
 	volatile ms_time_t sleepTimeRemaining;
-	thread_priority_t priority; // TODO: Implement priorities
+	ms_time_t deadline;
+	ms_time_t deadlineCounter;
+	bool isPeriodic;
+	ms_time_t period;
 } osthread_t;
 
 #endif // OS_DEFS_H
