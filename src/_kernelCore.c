@@ -49,17 +49,20 @@ void osSched(void) {
 	ms_time_t earliestDeadline = UINT32_MAX;
 	thread_id_t earliestID = -1;
 	thread_id_t id = osCurrentTask;
-	for (int = 0; i < totalThreads; i++) {
+
+	// `i` goes to totalThreads + 1 so that it loops back to the original thread
+	for (int i = 0; i < totalThreads + 1; i++) {
 		id = (id + 1) % totalThreads;
 
 		if (id == IDLE_THREAD_ID)
 			continue;
 		
-		if (osThreads[id].state == ACTIVE){
-			if (osThreads[id].deadline < earliest) {
-				earliestDeadline = osThreads[id].deadline;
-				earliestID = id;
-			}
+		if (osThreads[id].state != ACTIVE)
+			continue;
+		
+		if (osThreads[id].deadline < earliestDeadline) {
+			earliestDeadline = osThreads[id].deadline;
+			earliestID = id;
 		}
 	}
 
@@ -91,7 +94,9 @@ void osYield(void) {
 	if (osThreads[osCurrentTask].isPeriodic)
 		osSleep(osThreads[osCurrentTask].period);
 	
+	// Reset the deadline counter
 	osThreads[osCurrentTask].deadlineCounter = osThreads[osCurrentTask].deadline;
+
 	__ASM(SVC_YIELD_SWITCH_CMD);
 }
 

@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define NUM_REGS_TO_PUSH 8U // Number of registers to push to the stack
+
 #define THREADING_MODE 1<<1
 #define SET_PENDSVET 1<<28
 

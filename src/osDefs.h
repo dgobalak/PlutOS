@@ -14,11 +14,11 @@
 #define SHPR3 *(uint32_t*)0xE000ED20 // System Handler Priority Register 3
 #define SHPR2 *(uint32_t*)0xE000ED1C // System Handler Priority Register 2
 
+#define ICSR *(uint32_t*)0xE000ED04 // Interrupt Control and State Register
+
 #define SVC_PRIORITY 0xFDU
 #define PENDSV_PRIORITY 0xFEU
 #define SYSTICK_PRIORITY 0xFFU
-
-#define ICSR *(uint32_t*)0xE000ED04 // Interrupt Control and State Register
 
 #define SYSTICK_MS 1 // Number of ms between each SysTick interrupt
 #define SYSTICK_SEC (SYSTICK_MS/1000.0) // Number of seconds between each SysTick interrupt

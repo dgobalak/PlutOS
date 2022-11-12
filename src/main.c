@@ -25,12 +25,12 @@ void task1(void* args) {
 void task2(void* args) {
 	while(1) {
 		printf("In Task 2\n");
-		osSleep(10);
+		osSleep(2);
 	}
 }
 
 /**
- * @brief Test thread function
+ * @brief Periodic test thread function
  * 
  * @param args Thread arguments
  */
@@ -77,7 +77,7 @@ int main(void) {
 	// Create threads; the priority values are not used yet
 	osNewThread(task1, 15);
 	osNewThread(task2, 15);
-	osNewPeriodicThread(task3, 15, 1);
+	osNewPeriodicThread(task3, 15, 3);
 #else
 	osNewThread(task4, LOWEST_PRIORITY);
 	osNewThread(task5, LOWEST_PRIORITY);

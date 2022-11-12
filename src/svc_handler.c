@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 void svcYield(void) {
-	yieldCurrentTask(8);
+	yieldCurrentTask(NUM_REGS_TO_PUSH);
 	osSched(); // Choose next task			
 	pendPendSV();
 }
