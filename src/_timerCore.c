@@ -20,6 +20,9 @@ void updateTimers(void) {
 	bool switchRequired = false; // Only used if a thread wakes up with a deadline earlier than the current thread
 
 	for (thread_id_t id = 0; id < totalThreads; id++) {
+		if (id == IDLE_THREAD_ID)
+			continue;
+
 		if (osThreads[id].state == SLEEPING) {
 			osThreads[id].sleepTimeRemaining--;
 
