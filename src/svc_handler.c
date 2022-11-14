@@ -10,6 +10,7 @@ extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 
 void svcYield(void) {
 	if (osThreads[osCurrentTask].isPeriodic) {
+		// Periodic threads must be put to sleep
 		osThreads[osCurrentTask].sleepTimeRemaining = osThreads[osCurrentTask].period;
 		osThreads[osCurrentTask].state = SLEEPING;
 	}

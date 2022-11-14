@@ -61,7 +61,7 @@ void task4(void* args) {
 void task5(void* args) {
 	while(1) {
 		printf("In Task 5\n");
-		osSleep(12);
+		osSleep(5);
 	}
 }
 
@@ -120,7 +120,7 @@ int main(void) {
 #elif defined(LAB4_TEST2)
 	osNewThread(task4, 10);
 	osNewThread(task5, 10);
-	osNewPeriodicThread(task6, 10, 5); // 1/200Hz = 5ms
+	osNewPeriodicThread(task6, 10, 13); // 1/200Hz = 5ms
 #elif defined(LAB4_TEST3)
 	osNewThread(task7, 10);
 	osNewThread(task8, 10);

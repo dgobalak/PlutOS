@@ -15,11 +15,11 @@ void SysTick_Handler(void) {
 }
 
 void updateTimers(void) {
-	// Update sleep and deadline timers for all threads
+	bool switchRequired = false; // Only set if a thread has a deadline earlier than the current thread
 
-	bool switchRequired = false; // Only used if a thread wakes up with a deadline earlier than the current thread
-
+	// Iterate through all threads
 	for (thread_id_t id = 0; id < totalThreads; id++) {
+		// Don't need to do anything for IDLE thread
 		if (id == IDLE_THREAD_ID)
 			continue;
 
@@ -29,7 +29,7 @@ void updateTimers(void) {
 			if (osThreads[id].sleepTimeRemaining != 0)
 				continue;
 			
-			// Thread is ready to wake up
+			// Thread is ready to wake up; sleep time is zero
 			osThreads[id].state = ACTIVE;
 
 		} else if (osThreads[id].state == ACTIVE || osThreads[id].state == RUNNING) {		
@@ -37,14 +37,15 @@ void updateTimers(void) {
 				osThreads[id].deadlineCounter--;
 			
 			if (osThreads[id].deadlineCounter == 0)
-				printf("Deadline not met for Thread %d\n", id);
-		}	
+				printf("Deadline not met for Thread %d\n", id); // Deadline missed
+		}
+		
+		// Check if thread has an earlier deadline than the current thread
 		if (osThreads[id].deadlineCounter < osThreads[osCurrentTask].deadlineCounter)
 			switchRequired = true;
 	}
 
 	// If a thread woke up with a deadline earlier than the current thread, switch to that thread
-	if (switchRequired) {
+	if (switchRequired)
 		osYield();
-	}
 }

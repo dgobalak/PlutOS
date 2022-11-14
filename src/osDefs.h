@@ -9,7 +9,7 @@
 
 #define MAX_POOL_SIZE 0x2000 // Max size of all stacks combined
 #define MSR_STACK_SIZE 512 // MSP Stack Size (First thread stack starts at this offset from MSP)
-#define THREAD_STACK_SIZE 0x200 // Size of each thread's stack
+#define THREAD_STACK_SIZE 512 // Size of each thread's stack
 
 #define SHPR3 *(uint32_t*)0xE000ED20 // System Handler Priority Register 3
 #define SHPR2 *(uint32_t*)0xE000ED1C // System Handler Priority Register 2

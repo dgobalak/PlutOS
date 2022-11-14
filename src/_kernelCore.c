@@ -23,6 +23,7 @@ uint32_t mspAddr; // The initial address of the MSP
  */
 static void osIdleTask(void* args) {
 	while(1) {
+		// printf("Idle\n");
 	}
 }
 
