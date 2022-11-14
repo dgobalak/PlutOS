@@ -102,15 +102,13 @@ void task8(void* args) {
 }
 
 
-#define LAB4_TEST1
+// #define LAB4_TEST1
 // #define LAB4_TEST2
-// #define LAB4_TEST3
+#define LAB4_TEST3
 
 int main(void) {	
 	// Always call this function at the start. It sets up various peripherals, the clock etc.
 	SystemInit();
-	
-	printf("Hello, world!\n");
 	
 	// Initialize the kernel.
 	kernelInit();

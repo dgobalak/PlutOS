@@ -45,15 +45,6 @@ void updateTimers(void) {
 
 	// If a thread woke up with a deadline earlier than the current thread, switch to that thread
 	if (switchRequired) {
-		if (osThreads[osCurrentTask].isPeriodic) {
-			osThreads[osCurrentTask].sleepTimeRemaining = osThreads[osCurrentTask].period;
-			osThreads[osCurrentTask].state = SLEEPING;
-		}
-
-		// Reset the deadline counter
-		osThreads[osCurrentTask].deadlineCounter = osThreads[osCurrentTask].deadline;
-		
-		yieldCurrentTask(NUM_REGS_TO_PUSH);
-		osSched(); // Choose next task			
-		pendPendSV();	}
+		osYield();
+	}
 }

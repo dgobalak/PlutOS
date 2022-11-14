@@ -16,8 +16,8 @@
 
 #define ICSR *(uint32_t*)0xE000ED04 // Interrupt Control and State Register
 
-#define SVC_PRIORITY 0xFDU
-#define PENDSV_PRIORITY 0xFE
+#define SVC_PRIORITY 0xFU
+#define PENDSV_PRIORITY 0xFEU
 #define SYSTICK_PRIORITY 0xFFU
 
 #define SYSTICK_MS 1 // Number of ms between each SysTick interrupt
