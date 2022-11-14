@@ -43,49 +43,49 @@ thread_id_t osNewPeriodicThread(void (*taskFunc)(void*args), ms_time_t deadline,
 }
 	
 thread_id_t osNewThread(void (*taskFunc)(void*args), ms_time_t deadline) {
-	if (totalThreads < MAX_THREADS) {
-		// Configure the thread in the array
-		osThreads[totalThreads].threadStack = getNewThreadStack(MSR_STACK_SIZE + totalThreads*THREAD_STACK_SIZE);//(uint32_t*)((mspAddr - MSR_STACK_SIZE) - (totalThreads)*THREAD_STACK_SIZE);
-		osThreads[totalThreads].threadFunc = taskFunc;
-		osThreads[totalThreads].state = ACTIVE;
-		osThreads[totalThreads].sleepTimeRemaining = 0;
-		osThreads[totalThreads].deadline = deadline;
-		osThreads[totalThreads].deadlineCounter = deadline;
-		osThreads[totalThreads].period = 0;
-		osThreads[totalThreads].isPeriodic = false;
+	if (totalThreads >= MAX_THREADS)
+		return -1;
+	
+	// Configure the thread in the array
+	osThreads[totalThreads].threadStack = getNewThreadStack(MSR_STACK_SIZE + totalThreads*THREAD_STACK_SIZE);//(uint32_t*)((mspAddr - MSR_STACK_SIZE) - (totalThreads)*THREAD_STACK_SIZE);
+	osThreads[totalThreads].threadFunc = taskFunc;
+	osThreads[totalThreads].state = ACTIVE;
+	osThreads[totalThreads].sleepTimeRemaining = 0;
+	osThreads[totalThreads].deadline = deadline;
+	osThreads[totalThreads].deadlineCounter = deadline;
+	osThreads[totalThreads].period = 0;
+	osThreads[totalThreads].isPeriodic = false;
+	
+	// Now we need to set up the stack; it should 'look' like the thread is already running
+	
+	// First is xpsr, the status register. If bit 24 is not set and we are in thread mode we get a hard fault, so we just make sure it's set
+	*(--osThreads[totalThreads].threadStack) = 1<<24;
+	
+	// Next is the program counter, which is set to whatever the function we are running will be
+	*(--osThreads[totalThreads].threadStack) = (uint32_t)taskFunc;
+	
+	// Next is a set of important registers. These values are meaningless but we are setting them to be nonzero so that the 
+	// compiler doesn't optimize out these lines
+	*(--osThreads[totalThreads].threadStack) = 0xE; //LR
+	*(--osThreads[totalThreads].threadStack) = 0xC; //R12
+	*(--osThreads[totalThreads].threadStack) = 0x3; //R3
+	*(--osThreads[totalThreads].threadStack) = 0x2; //R2
+	*(--osThreads[totalThreads].threadStack) = 0x1; //R1
+	*(--osThreads[totalThreads].threadStack) = 0x0; // R0
+	
+	
+	// Now we have registers R11 to R4, which again are just set to random values so that we know for sure that they exist
+	*(--osThreads[totalThreads].threadStack) = 0xB; //R11
+	*(--osThreads[totalThreads].threadStack) = 0xA; //R10
+	*(--osThreads[totalThreads].threadStack) = 0x9; //R9
+	*(--osThreads[totalThreads].threadStack) = 0x8; //R8
+	*(--osThreads[totalThreads].threadStack) = 0x7; //R7
+	*(--osThreads[totalThreads].threadStack) = 0x6; //R6
+	*(--osThreads[totalThreads].threadStack) = 0x5; //R5
+	*(--osThreads[totalThreads].threadStack) = 0x4; //R4
 		
-		// Now we need to set up the stack; it should 'look' like the thread is already running
 		
-		// First is xpsr, the status register. If bit 24 is not set and we are in thread mode we get a hard fault, so we just make sure it's set
-		*(--osThreads[totalThreads].threadStack) = 1<<24;
-		
-		// Next is the program counter, which is set to whatever the function we are running will be
-		*(--osThreads[totalThreads].threadStack) = (uint32_t)taskFunc;
-		
-		// Next is a set of important registers. These values are meaningless but we are setting them to be nonzero so that the 
-		// compiler doesn't optimize out these lines
-		*(--osThreads[totalThreads].threadStack) = 0xE; //LR
-		*(--osThreads[totalThreads].threadStack) = 0xC; //R12
-		*(--osThreads[totalThreads].threadStack) = 0x3; //R3
-		*(--osThreads[totalThreads].threadStack) = 0x2; //R2
-		*(--osThreads[totalThreads].threadStack) = 0x1; //R1
-		*(--osThreads[totalThreads].threadStack) = 0x0; // R0
-		
-		
-		// Now we have registers R11 to R4, which again are just set to random values so that we know for sure that they exist
-		*(--osThreads[totalThreads].threadStack) = 0xB; //R11
-		*(--osThreads[totalThreads].threadStack) = 0xA; //R10
-		*(--osThreads[totalThreads].threadStack) = 0x9; //R9
-		*(--osThreads[totalThreads].threadStack) = 0x8; //R8
-		*(--osThreads[totalThreads].threadStack) = 0x7; //R7
-		*(--osThreads[totalThreads].threadStack) = 0x6; //R6
-		*(--osThreads[totalThreads].threadStack) = 0x5; //R5
-		*(--osThreads[totalThreads].threadStack) = 0x4; //R4
-		
-		
-		// Now the stack is set up, the thread's SP is correct, since we've been decrementing it.
-		totalThreads++;
-		return (thread_id_t)(totalThreads - 1); // Return the thread index
-	}
-	return -1;
+	// Now the stack is set up, the thread's SP is correct, since we've been decrementing it.
+	totalThreads++;
+	return (thread_id_t)(totalThreads - 1); // Return the thread index
 }
