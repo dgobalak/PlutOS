@@ -60,7 +60,7 @@ void osSched(void) {
 		if (osThreads[id].state != ACTIVE)
 			continue;
 		
-		if (osThreads[id].deadline < earliestDeadline) {
+		if ( (osThreads[id].deadline < earliestDeadline) || (earliestID == -1) ) {
 			earliestDeadline = osThreads[id].deadline;
 			earliestID = id;
 		}
@@ -108,7 +108,7 @@ void osSleep(ms_time_t sleepTime) {
 }
 
 bool osKernelStart() {
-	if(totalThreads > 0) {
+	if (totalThreads > 0) {
 		osCurrentTask = -1;
 		__set_CONTROL(THREADING_MODE);
 		__set_PSP((uint32_t)osThreads[0].threadStack);
