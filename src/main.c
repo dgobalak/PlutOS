@@ -61,7 +61,7 @@ void task4(void* args) {
 void task5(void* args) {
 	while(1) {
 		printf("In Task 5\n");
-		osSleep(7);
+		osSleep(12);
 	}
 }
 
@@ -102,21 +102,23 @@ void task8(void* args) {
 }
 
 
-// #define LAB4_TEST1
+#define LAB4_TEST1
 // #define LAB4_TEST2
 // #define LAB4_TEST3
 
-int main(void) {
+int main(void) {	
 	// Always call this function at the start. It sets up various peripherals, the clock etc.
 	SystemInit();
+	
+	printf("Hello, world!\n");
 	
 	// Initialize the kernel.
 	kernelInit();
 	
 #ifdef LAB4_TEST1
-	osNewPeriodicThread(task1, 10, 4); // 1/256Hz = 3.9ms
-	osNewPeriodicThread(task2, 10, 10); // 1/100Hz = 10ms
-	osNewPeriodicThread(task3, 10, 83); // 1/12Hz = 83.3ms
+	osNewPeriodicThread(task1, 20, 4); // 1/256Hz = 3.9ms
+	osNewPeriodicThread(task2, 20, 10); // 1/100Hz = 10ms
+	osNewPeriodicThread(task3, 20, 83); // 1/12Hz = 83.3ms
 #elif defined(LAB4_TEST2)
 	osNewThread(task4, 10);
 	osNewThread(task5, 10);

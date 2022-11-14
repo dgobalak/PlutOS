@@ -23,8 +23,7 @@ uint32_t mspAddr; // The initial address of the MSP
  */
 static void osIdleTask(void* args) {
 	while(1) {
-		printf("In Idle Task\n");
-		osYield();
+		printf("Idle\n");
 	}
 }
 
@@ -91,12 +90,6 @@ void yieldCurrentTask(uint8_t stackDiff) {
 }
 
 void osYield(void) {
-	if (osThreads[osCurrentTask].isPeriodic)
-		osSleep(osThreads[osCurrentTask].period);
-	
-	// Reset the deadline counter
-	osThreads[osCurrentTask].deadlineCounter = osThreads[osCurrentTask].deadline;
-
 	__ASM(SVC_YIELD_SWITCH_CMD);
 }
 

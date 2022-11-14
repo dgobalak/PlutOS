@@ -17,7 +17,7 @@
 #define ICSR *(uint32_t*)0xE000ED04 // Interrupt Control and State Register
 
 #define SVC_PRIORITY 0xFDU
-#define PENDSV_PRIORITY 0xFEU
+#define PENDSV_PRIORITY 0xFE
 #define SYSTICK_PRIORITY 0xFFU
 
 #define SYSTICK_MS 1 // Number of ms between each SysTick interrupt
@@ -69,8 +69,8 @@ typedef struct osthread {
 	volatile thread_state_t state;
 	volatile ms_time_t sleepTimeRemaining;
 	ms_time_t deadline;
-	ms_time_t deadlineCounter;
-	bool isPeriodic;
+	volatile ms_time_t deadlineCounter;
+	volatile bool isPeriodic;
 	ms_time_t period;
 } osthread_t;
 

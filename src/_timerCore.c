@@ -31,21 +31,29 @@ void updateTimers(void) {
 			
 			// Thread is ready to wake up
 			osThreads[id].state = ACTIVE;
-			osThreads[id].deadlineCounter = osThreads[id].deadline; // Deadline counter should already be reset (in osYield), but just in case do it again
 
-			if (osThreads[id].deadlineCounter < osThreads[osCurrentTask].deadlineCounter)
-				switchRequired = true;	
-
-		} else if (osThreads[id].state == ACTIVE) {
+		} else if (osThreads[id].state == ACTIVE || osThreads[id].state == RUNNING) {		
 			if (osThreads[id].deadlineCounter > 0)
 				osThreads[id].deadlineCounter--;
 			
 			if (osThreads[id].deadlineCounter == 0)
 				printf("Deadline not met for Thread %d\n", id);
 		}	
+		if (osThreads[id].deadlineCounter < osThreads[osCurrentTask].deadlineCounter)
+			switchRequired = true;
 	}
 
 	// If a thread woke up with a deadline earlier than the current thread, switch to that thread
-	if (switchRequired)
-		osYield();
+	if (switchRequired) {
+		if (osThreads[osCurrentTask].isPeriodic) {
+			osThreads[osCurrentTask].sleepTimeRemaining = osThreads[osCurrentTask].period;
+			osThreads[osCurrentTask].state = SLEEPING;
+		}
+
+		// Reset the deadline counter
+		osThreads[osCurrentTask].deadlineCounter = osThreads[osCurrentTask].deadline;
+		
+		yieldCurrentTask(NUM_REGS_TO_PUSH);
+		osSched(); // Choose next task			
+		pendPendSV();	}
 }

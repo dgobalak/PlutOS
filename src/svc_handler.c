@@ -1,9 +1,22 @@
 #include "svc_handler.h"
 #include "_kernelCore.h"
+#include "osDefs.h"
 
 #include <stdint.h>
+#include <stdio.h>
+
+extern thread_id_t osCurrentTask; // Current task ID
+extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 
 void svcYield(void) {
+	if (osThreads[osCurrentTask].isPeriodic) {
+		osThreads[osCurrentTask].sleepTimeRemaining = osThreads[osCurrentTask].period;
+		osThreads[osCurrentTask].state = SLEEPING;
+	}
+
+	// Reset the deadline counter
+	osThreads[osCurrentTask].deadlineCounter = osThreads[osCurrentTask].deadline;
+	
 	yieldCurrentTask(NUM_REGS_TO_PUSH);
 	osSched(); // Choose next task			
 	pendPendSV();
