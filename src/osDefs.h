@@ -30,6 +30,8 @@
 // The index of the idle task in the array of tasks
 #define IDLE_THREAD_ID 0
 
+#define IDLE_THREAD_DEADLINE UINT32_MAX
+
 /**
  * @brief The state of a thread
  * 

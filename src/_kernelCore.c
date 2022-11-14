@@ -40,7 +40,7 @@ void kernelInit(void) {
 	SysTick_Config(SYSTICK_TICKS);
 	
 	// Create the idle thread
-	osNewThread(osIdleTask, UINT32_MAX);
+	osNewThread(osIdleTask, IDLE_THREAD_DEADLINE);
 }
 
 void osSched(void) {
