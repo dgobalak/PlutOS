@@ -65,13 +65,13 @@ void osSched(void) {
 		}
 	}
 
-	osCurrentTask = earliestID;
+	osCurrentTask = earliestID; // -1 if idle thread is the only active task
 	
 	// If no ACTIVE task is found, switch to the idle task
 	if (earliestID == -1)
 		osCurrentTask = IDLE_THREAD_ID;
 		
-	// Configure thread
+	// Set the chosen thread's state to RUNNING
 	osThreads[osCurrentTask].state = RUNNING;
 }
 
@@ -83,14 +83,16 @@ void pendPendSV(void) {
 
 void yieldCurrentTask(uint8_t stackDiff) {
 	if (osCurrentTask >= 0) {
-		// Yield the current task (It could be in the RUNNING state or in the SLEEPING state)
+		// Yield the current RUNNING task
+		// If the thread was already set to the SLEEPING state by osSleep, keep it as SLEEPING
+		// Otherwise, set as ACTIVE
 		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
 		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - stackDiff*sizeof(uint32_t)); // We are about to push `stackDiff` uint32_t's
 	}
 }
 
 void osYield(void) {
-	__ASM(SVC_YIELD_SWITCH_CMD);
+	__ASM(SVC_YIELD_SWITCH_CMD); // Make SVC call to yield
 }
 
 void osSleep(ms_time_t sleepTime) {

@@ -34,7 +34,9 @@ uint32_t* getNewThreadStack(uint32_t offset) {
 
 thread_id_t osNewPeriodicThread(void (*taskFunc)(void*args), ms_time_t deadline, ms_time_t period) {
 	thread_id_t id = osNewThread(taskFunc, deadline);
+	
 	if (id != -1) {
+		// Configure attributes specific to periodic threads
 		osThreads[id].period = period;
 		osThreads[id].isPeriodic = true;
 	}
