@@ -6,6 +6,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define NUM_REGS_TO_PUSH 8U // Number of registers to push to the stack
+
+#define THREADING_MODE 1<<1
+#define SET_PENDSVET 1<<28
+
 /**
  * @brief Initializes memory structures and interrupts necessary to run the kernel
  * 
@@ -23,16 +28,10 @@ void pendPendSV(void);
 void yieldCurrentTask(uint8_t stackDiff);
 
 /**
- * @brief Called by task to yield current task (Switch to next available task)
+ * @brief Called to yield current task (Switch to next available task)
  * 
  */
 void osYield(void);
-
-/**
- * @brief Called by SysTick Interrupt to yield current task if the task has run for
- * over MAX_THREAD_RUNTIME_MS
- */
-void osYieldFromSysTick(void);
 
 /**
  * @brief Make the current task sleep for `sleepTime` ms

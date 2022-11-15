@@ -4,32 +4,48 @@
 #include "osDefs.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
-extern bool osYieldMutex; // Mutex to protect yield
 extern thread_id_t osCurrentTask; // Index for current running task
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 extern uint32_t totalThreads; // number of created threads
 
 void SysTick_Handler(void) {
 	updateTimers();
-	if (osYieldMutex && !osThreads[osCurrentTask].runTimeRemaining) {
-		osYieldFromSysTick();
-	}
 }
 
 void updateTimers(void) {
-	// Update runTimeRemaining of current task
-	if (osThreads[osCurrentTask].runTimeRemaining != 0) {
-		osThreads[osCurrentTask].runTimeRemaining--;
-	}
-	
-	// Update sleepTimeRemaining of all SLEEPING tasks
+	bool switchRequired = false; // Only set if a thread has a deadline earlier than the current thread
+
+	// Iterate through all threads
 	for (thread_id_t id = 0; id < totalThreads; id++) {
+		// Don't need to do anything for IDLE thread
+		if (id == IDLE_THREAD_ID)
+			continue;
+
 		if (osThreads[id].state == SLEEPING) {
 			osThreads[id].sleepTimeRemaining--;
-			if (osThreads[id].sleepTimeRemaining < 1) {
-				osThreads[id].state = ACTIVE;
-			}
+
+			if (osThreads[id].sleepTimeRemaining != 0)
+				continue;
+			
+			// Thread is ready to wake up; sleep time is zero
+			osThreads[id].state = ACTIVE;
+
+		} else if (osThreads[id].state == ACTIVE || osThreads[id].state == RUNNING) {		
+			if (osThreads[id].deadlineCounter > 0)
+				osThreads[id].deadlineCounter--;
+			
+			if (osThreads[id].deadlineCounter == 0)
+				printf("Deadline not met for Thread %d\n", id); // Deadline missed
 		}
+		
+		// Check if thread has an earlier deadline than the current thread
+		if (osThreads[id].deadlineCounter < osThreads[osCurrentTask].deadlineCounter)
+			switchRequired = true;
 	}
+
+	// If a thread woke up with a deadline earlier than the current thread, switch to that thread
+	if (switchRequired)
+		osYield();
 }

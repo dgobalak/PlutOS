@@ -438,6 +438,16 @@
               <FileType>5</FileType>
               <FilePath>.\src\_timerCore.h</FilePath>
             </File>
+            <File>
+              <FileName>svc_handler.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\svc_handler.h</FilePath>
+            </File>
+            <File>
+              <FileName>svc_handler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\svc_handler.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

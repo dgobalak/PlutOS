@@ -6,6 +6,8 @@
 #include <LPC17xx.h>
 #include <stdint.h>
 
+#define MSP_STORAGE_ADDR 0x00
+
 /**
  * @brief Obtains the initial location of MSP by looking it up in the vector table
  * 
@@ -31,14 +33,22 @@ uint32_t* getNewThreadStack(uint32_t offset);
 void setThreadingWithPSP(uint32_t* threadStack);
 
 /**
+ * @brief Creates a new periodic thread
+ * 
+ * @param taskFunc The function that the thread will run
+ * @param deadline The deadline of the thread
+ * @param period The period of the thread
+ * @return int The thread ID of the new thread. Returns -1 if error occurs
+ */
+thread_id_t osNewPeriodicThread(void (*taskFunc)(void*args), ms_time_t deadline, ms_time_t period);
+
+/**
  * @brief Creates a new thread
  * 
  * @param taskFunc The function that the thread will run
- * @param priority The priority of the thread
- * @return thread_id_t The thread ID of the new thread. Returns -1 if error occurs
+ * @param deadline The deadline of the thread
+ * @return int The thread ID of the new thread. Returns -1 if error occurs
  */
-thread_id_t osNewThread(void (*taskFunc)(void*args), thread_priority_t priority);
-
-
+thread_id_t osNewThread(void (*taskFunc)(void*args), ms_time_t deadline);
 
 #endif // _THREADS_CORE_H

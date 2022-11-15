@@ -1,0 +1,7 @@
+#ifndef SVC_HANDLER_H
+#define SVC_HANDLER_H
+
+#define SVC_YIELD_SWITCH 0U
+#define SVC_YIELD_SWITCH_CMD "SVC #0"
+
+#endif // SVC_HANDLER_H

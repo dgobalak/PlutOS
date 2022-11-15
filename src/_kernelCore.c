@@ -1,5 +1,6 @@
 #include "_kernelCore.h"
 #include "_threadsCore.h"
+#include "svc_handler.h"
 #include "osDefs.h"
 
 #include <LPC17xx.h>
@@ -11,7 +12,6 @@
 osthread_t osThreads[MAX_THREADS]; // Array of all threads
 thread_id_t osCurrentTask = -1; // Index for current running task
 uint32_t totalThreads = 0; // Number of created threads
-bool osYieldMutex = true; // Mutex to protect against concurrent yield
 uint32_t mspAddr; // The initial address of the MSP
 
 /**
@@ -23,14 +23,14 @@ uint32_t mspAddr; // The initial address of the MSP
  */
 static void osIdleTask(void* args) {
 	while(1) {
-		printf("In Idle Task\n");
-		osYield();
+		// printf("Idle\n");
 	}
 }
 
 void kernelInit(void) {
-	// Set PendSV to the weakest priority we can set
-	SHPR3 |= 0xFF << 16;
+	SHPR3 |= SYSTICK_PRIORITY << 24; // Set SysTick priority
+	SHPR3 |= PENDSV_PRIORITY << 16; // Set PendSV priority
+	SHPR2 |= SVC_PRIORITY << 24; // Set SVC priority
 	
 	// Initialize the address of the MSP
 	uint32_t* MSP_Original = 0;
@@ -40,73 +40,59 @@ void kernelInit(void) {
 	SysTick_Config(SYSTICK_TICKS);
 	
 	// Create the idle thread
-	osNewThread(osIdleTask, LOWEST_PRIORITY);
+	osNewThread(osIdleTask, IDLE_THREAD_DEADLINE);
 }
 
 void osSched(void) {
-	// Choose next thread to run
-	// TODO: Make use of the priority when choosing next task
-	// For now, just do round robin scheduling with no priorities
-	
-	// Iterate through tasks and find one that's ACTIVE, but not the idle task
-	int numTasksChecked = 0;
-	do {
-		osCurrentTask = (osCurrentTask+1)%(totalThreads);
-		numTasksChecked++;
+	// Find the task with the earliest deadline, but not the idle task
+	ms_time_t earliestDeadline = UINT32_MAX;
+	thread_id_t earliestID = -1;
+	thread_id_t id = osCurrentTask;
+
+	// `i` goes to totalThreads + 1 so that it loops back to the original thread
+	for (int i = 0; i < totalThreads + 1; i++) {
+		id = (id + 1) % totalThreads;
+
+		if (id == IDLE_THREAD_ID)
+			continue;
 		
-		if (numTasksChecked >= totalThreads) {
-			break;
+		if (osThreads[id].state != ACTIVE)
+			continue;
+		
+		if ( (osThreads[id].deadline < earliestDeadline) || (earliestID == -1) ) {
+			earliestDeadline = osThreads[id].deadline;
+			earliestID = id;
 		}
-		
-	}	while ((osThreads[osCurrentTask].state != ACTIVE) || (osCurrentTask == IDLE_THREAD_ID));
+	}
+
+	osCurrentTask = earliestID; // -1 if idle thread is the only active task
 	
 	// If no ACTIVE task is found, switch to the idle task
-	if (osThreads[osCurrentTask].state != ACTIVE) {
-			osCurrentTask = IDLE_THREAD_ID;
-	}
-	
-	printf(""); // DO NOT REMOVE. THIS PRINT PREVENTS A TIMING ISSUE
-	
-	// Configure thread
+	if (earliestID == -1)
+		osCurrentTask = IDLE_THREAD_ID;
+		
+	// Set the chosen thread's state to RUNNING
 	osThreads[osCurrentTask].state = RUNNING;
-	osThreads[osCurrentTask].runTimeRemaining = MAX_THREAD_RUNTIME_MS;
 }
 
 void pendPendSV(void) {
 	// Pend the PendSV interrupt
-	ICSR |= 1<<28; // Set PENDSVSET to 1 to make PendSV exception pending
+	ICSR |= SET_PENDSVET; // Set PENDSVSET to 1 to make PendSV exception pending
 	__asm("isb");
 }
 
 void yieldCurrentTask(uint8_t stackDiff) {
 	if (osCurrentTask >= 0) {
-		// Yield the current task (It could be in the RUNNING state or in the SLEEPING state)
+		// Yield the current RUNNING task
+		// If the thread was already set to the SLEEPING state by osSleep, keep it as SLEEPING
+		// Otherwise, set as ACTIVE
 		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
-		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - stackDiff*4); // We are about to push `stackDiff` uint32_t's
+		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - stackDiff*sizeof(uint32_t)); // We are about to push `stackDiff` uint32_t's
 	}
 }
 
 void osYield(void) {
-	// The mutex is used to reduce the likelihood that the osYieldSysTick is called
-	// during a regular osYield
-	osYieldMutex = false;
-
-	yieldCurrentTask(16);
-	
-	osSched(); // Choose next task
-	
-	osYieldMutex = true;
-	
-	pendPendSV();
-}
-
-void osYieldFromSysTick(void) {
-	// This is called by the SysTick Handler
-	yieldCurrentTask(8);
-			
-	osSched(); // Choose next task
-
-	pendPendSV();
+	__ASM(SVC_YIELD_SWITCH_CMD); // Make SVC call to yield
 }
 
 void osSleep(ms_time_t sleepTime) {
@@ -117,9 +103,9 @@ void osSleep(ms_time_t sleepTime) {
 }
 
 bool osKernelStart() {
-	if(totalThreads > 0) {
+	if (totalThreads > 0) {
 		osCurrentTask = -1;
-		__set_CONTROL(1<<1);
+		__set_CONTROL(THREADING_MODE);
 		__set_PSP((uint32_t)osThreads[0].threadStack);
 		osYield();
 	}
@@ -129,12 +115,10 @@ bool osKernelStart() {
 
 void setThreadingWithPSP(uint32_t* threadStack) {
 	__set_PSP((uint32_t)threadStack); // Set PSP to threadStack
-	__set_CONTROL(1<<1); // Switch to threading mode
+	__set_CONTROL(THREADING_MODE); // Switch to threading mode
 }
 
-int switchTask(void){
+int switchTask(void) {
 	__set_PSP((uint32_t)osThreads[osCurrentTask].threadStack); // Set the new PSP
-
-	// The return value can be accessed in the assembly code. Access it from r0 before overwriting r0
 	return 1; 
 }
