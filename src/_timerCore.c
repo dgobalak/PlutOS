@@ -47,5 +47,5 @@ void updateTimers(void) {
 
 	// If a thread woke up with a deadline earlier than the current thread, switch to that thread
 	if (switchRequired)
-		osYield();
+		osYieldPreemptive();
 }

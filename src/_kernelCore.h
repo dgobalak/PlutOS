@@ -34,6 +34,12 @@ void yieldCurrentTask(uint8_t stackDiff);
 void osYield(void);
 
 /**
+ * @brief Called to yield current task preemptively (Don't reset deadline)
+ * 
+ */
+void osYieldPreemptive(void);
+
+/**
  * @brief Make the current task sleep for `sleepTime` ms
  */
 void osSleep(ms_time_t sleepTime);
