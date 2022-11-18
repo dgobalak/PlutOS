@@ -95,6 +95,10 @@ void osYield(void) {
 	__ASM(SVC_YIELD_SWITCH_CMD); // Make SVC call to yield
 }
 
+void osYieldPreemptive(void) {
+	__ASM(SVC_YIELD_SWITCH_PREEMPTIVE_CMD); // Make SVC call to yield preemptively
+}
+
 void osSleep(ms_time_t sleepTime) {
 	// Set current task to the SLEEPING state
 	osThreads[osCurrentTask].sleepTimeRemaining = sleepTime;
