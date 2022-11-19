@@ -63,7 +63,10 @@ typedef uint32_t ms_time_t;
  * @param threadFunc The function that the thread will run
  * @param state The state of the thread
  * @param sleepTimeRemaining The remaining time in ms that the thread must sleep
- * @param priority The priority of the thread (Not used)
+ * @param deadline The deadline of the thread
+ * @param deadlineCounter Decrements from the deadline to 0
+ * @param isPeriodic Whether the thread is periodic or not
+ * @param period The period of the thread
  */
 typedef struct osthread {
 	volatile uint32_t * threadStack;
