@@ -36,8 +36,7 @@ mutex_id_t osMutexCreate(osmutex_handle_t mutex) {
 }
 
 bool osMutexAcquire(mutex_id_t id, ms_time_t timeout, bool osWaitForever) {
-    if (id < 0 || id > 
-    )
+    if (id < 0 || id > lastCreatedID)
         return false;
 
     osmutex_handle_t mutex = osMutexes[id];
