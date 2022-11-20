@@ -106,7 +106,7 @@ void osSleep(ms_time_t sleepTime) {
 	osYield();
 }
 
-bool osKernelStart() {
+bool osKernelStart(void) {
 	if (totalThreads > 0) {
 		osCurrentTask = -1;
 		__set_CONTROL(THREADING_MODE);
