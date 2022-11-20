@@ -41,7 +41,7 @@
 #define MAX_WAITING_THREADS 10
 
 #if MAX_WAITING_THREADS > MAX_THREADS
-#error MAX_WAITING_THREADS cannot be greater than MAX_THREADS
+#error MAX_WAITING_THREADS should not be greater than MAX_THREADS
 #endif
 
 // Max number of mutexes that can be created

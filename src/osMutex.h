@@ -8,11 +8,25 @@
 
 typedef int32_t mutex_id_t;
 
+/**
+ * @brief The status of a mutex
+ */
 typedef enum {
-    TAKEN = 0,
-    AVAILABLE = 1
+    TAKEN = 0,  // Mutex is taken
+    AVAILABLE = 1 // Mutex is available
 } mutex_status_t;
 
+/**
+ * @brief The mutex structure
+ * 
+ * @param id The ID of the mutex
+ * @param status The status of the mutex
+ * @param owner The ID of the thread that owns the mutex
+ * @param waitingThreads The IDs of the threads that are waiting on the mutex
+ * @param waitingThreadsCount The number of threads that are waiting on the mutex
+ * @param firstWaitingThread The index of the first waiting thread in the waitingThreads array
+ * @param lastWaitingThread The index of the last waiting thread in the waitingThreads array
+ */
 typedef struct {
     mutex_id_t id;
     mutex_status_t status;
@@ -38,10 +52,10 @@ mutex_id_t osMutexCreate(osmutex_t * mutex);
  * 
  * @param id The ID of the mutex to acquire
  * @param timeout The timeout in milliseconds to wait for the mutex to become available
- * @param poll If true, the function will wait forever for the mutex to become available
+ * @param osWaitForever If true, the function will wait forever for the mutex to become available
  * @return true If the mutex was successfully locked; false otherwise
  */
-bool osMutexAcquire(mutex_id_t id, ms_time_t timeout, bool poll);
+bool osMutexAcquire(mutex_id_t id, ms_time_t timeout, bool osWaitForever);
 
 /**
  * @brief Release a mutex
