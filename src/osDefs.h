@@ -44,9 +44,6 @@
 #error MAX_WAITING_THREADS should not be greater than MAX_THREADS
 #endif
 
-// Max number of mutexes that can be created
-#define MAX_MUTEXES 50
-
 /**
  * @brief The state of a thread
  * 
