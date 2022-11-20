@@ -11,6 +11,10 @@
 #define MSR_STACK_SIZE 512 // MSP Stack Size (First thread stack starts at this offset from MSP)
 #define THREAD_STACK_SIZE 512 // Size of each thread's stack
 
+#if (THREAD_STACK_SIZE * MAX_THREADS) > MAX_POOL_SIZE
+#error Maximum pool size is too small for the number of threads
+#endif
+
 #define SHPR3 *(uint32_t*)0xE000ED20 // System Handler Priority Register 3
 #define SHPR2 *(uint32_t*)0xE000ED1C // System Handler Priority Register 2
 
@@ -30,7 +34,18 @@
 // The index of the idle task in the array of tasks
 #define IDLE_THREAD_ID 0
 
+// The deadline of the idle thread
 #define IDLE_THREAD_DEADLINE UINT32_MAX
+
+// Max number of threads that can be waiting on a mutex
+#define MAX_WAITING_THREADS 10
+
+#if MAX_WAITING_THREADS > MAX_THREADS
+#error MAX_WAITING_THREADS cannot be greater than MAX_THREADS
+#endif
+
+// Max number of mutexes that can be created
+#define MAX_MUTEXES 50
 
 /**
  * @brief The state of a thread
