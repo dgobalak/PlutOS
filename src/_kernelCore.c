@@ -9,9 +9,15 @@
 #include <stdint.h>
 
 // GLOBAL VARIABLES
-osthread_t osThreads[MAX_THREADS]; // Array of all threads
-thread_id_t osCurrentTask = -1; // Index for current running task
-uint32_t totalThreads = 0; // Number of created threads
+thread_handle_t taskListHead = NULL; // Head of the task list
+thread_handle_t taskListTail = NULL; // Tail of the task list
+int taskCount = 0; // Number of tasks in the task linked list
+
+thread_handle_t currentTaskHandle = NULL; // Handle for current running task
+
+static osthread_t idleTask; // Idle task
+thread_handle_t idleTaskHandle = NULL; // Handle for the idle task
+
 uint32_t mspAddr; // The initial address of the MSP
 
 /**
@@ -21,10 +27,8 @@ uint32_t mspAddr; // The initial address of the MSP
  * 
  * @param args Thread arguments
  */
-static void osIdleTask(void* args) {
-	while(1) {
-		// printf("Idle\n");
-	}
+static void osIdleTaskFunc(void* args) {
+	while(1);
 }
 
 void kernelInit(void) {
@@ -33,46 +37,49 @@ void kernelInit(void) {
 	SHPR2 |= SVC_PRIORITY << 24; // Set SVC priority
 	
 	// Initialize the address of the MSP
-	uint32_t* MSP_Original = 0;
+	uint32_t* MSP_Original = MSP_STORAGE_ADDR;
 	mspAddr = *MSP_Original;
 	
 	// Configure the SysTick interrupt
 	SysTick_Config(SYSTICK_TICKS);
 	
 	// Create the idle thread
-	osNewThread(osIdleTask, IDLE_THREAD_DEADLINE);
+	idleTaskHandle = osNewThread(&idleTask, osIdleTaskFunc, IDLE_THREAD_DEADLINE);
 }
 
 void osSched(void) {
 	// Find the task with the earliest deadline, but not the idle task
 	ms_time_t earliestDeadline = UINT32_MAX;
-	thread_id_t earliestID = -1;
-	thread_id_t id = osCurrentTask;
+	thread_handle_t earliestHandle = NULL;
+	thread_handle_t handle = currentTaskHandle;
 
-	// `i` goes to totalThreads + 1 so that it loops back to the original thread
-	for (int i = 0; i < totalThreads + 1; i++) {
-		id = (id + 1) % totalThreads;
-
-		if (id == IDLE_THREAD_ID)
+	for (int i = 0; i < taskCount + 1; i++) {
+		if (handle == idleTaskHandle)
 			continue;
 		
-		if (osThreads[id].state != ACTIVE)
+		if (handle->state != ACTIVE)
 			continue;
 		
-		if ( (osThreads[id].deadline < earliestDeadline) || (earliestID == -1) ) {
-			earliestDeadline = osThreads[id].deadline;
-			earliestID = id;
+		if (handle->deadline < earliestDeadline || earliestHandle == NULL) {
+			earliestDeadline = handle->deadline;
+			earliestHandle = handle;
+		}
+	
+		if (handle->next) {
+			handle = handle->next;
+		} else {
+			handle = taskListHead;
 		}
 	}
 
-	osCurrentTask = earliestID; // -1 if idle thread is the only active task
-	
+	currentTaskHandle = earliestHandle; // NULL if no tasks are active
+
 	// If no ACTIVE task is found, switch to the idle task
-	if (earliestID == -1)
-		osCurrentTask = IDLE_THREAD_ID;
+	if (earliestHandle == NULL) {
+		currentTaskHandle = idleTaskHandle;
 		
 	// Set the chosen thread's state to RUNNING
-	osThreads[osCurrentTask].state = RUNNING;
+	currentTaskHandle->state = RUNNING;
 }
 
 void pendPendSV(void) {
@@ -82,12 +89,12 @@ void pendPendSV(void) {
 }
 
 void yieldCurrentTask(uint8_t stackDiff) {
-	if (osCurrentTask >= 0) {
+	if (currentTaskHandle != NULL) {
 		// Yield the current RUNNING task
 		// If the thread was already set to the SLEEPING state by osSleep, keep it as SLEEPING
 		// Otherwise, set as ACTIVE
-		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
-		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - stackDiff*sizeof(uint32_t)); // We are about to push `stackDiff` uint32_t's
+		currentTaskHandle->state = (currentTaskHandle->state == SLEEPING) ? SLEEPING : ACTIVE;
+		currentTaskHandle->threadStack = (uint32_t*)(__get_PSP() - stackDiff*sizeof(uint32_t)); // We are about to push `stackDiff` uint32_t's
 	}
 }
 
@@ -101,16 +108,16 @@ void osYieldPreemptive(void) {
 
 void osSleep(ms_time_t sleepTime) {
 	// Set current task to the SLEEPING state
-	osThreads[osCurrentTask].sleepTimeRemaining = sleepTime;
-	osThreads[osCurrentTask].state = SLEEPING;
+	currentTaskHandle->sleepTimeRemaining = sleepTime;
+	currentTaskHandle->state = SLEEPING;
 	osYield();
 }
 
-bool osKernelStart() {
-	if (totalThreads > 0) {
-		osCurrentTask = -1;
+bool osKernelStart(void) {
+	if (taskCount > 0) {
+		currentTaskHandle = NULL;
 		__set_CONTROL(THREADING_MODE);
-		__set_PSP((uint32_t)osThreads[0].threadStack);
+		__set_PSP((uint32_t)idleTaskHandle.threadStack);
 		osYield();
 	}
 	// If we get here, we failed to start the kernel
@@ -123,6 +130,6 @@ void setThreadingWithPSP(uint32_t* threadStack) {
 }
 
 int switchTask(void) {
-	__set_PSP((uint32_t)osThreads[osCurrentTask].threadStack); // Set the new PSP
+	__set_PSP((uint32_t)currentTaskHandle->threadStack); // Set the new PSP
 	return 1; 
 }

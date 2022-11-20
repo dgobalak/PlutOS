@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.html": "jinja-html",
+        "_kernelcore.h": "c"
+    }
+}

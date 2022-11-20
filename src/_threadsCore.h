@@ -35,20 +35,22 @@ void setThreadingWithPSP(uint32_t* threadStack);
 /**
  * @brief Creates a new periodic thread
  * 
+ * @param threadBuffer The buffer to store the thread
  * @param taskFunc The function that the thread will run
  * @param deadline The deadline of the thread
  * @param period The period of the thread
  * @return int The thread ID of the new thread. Returns -1 if error occurs
  */
-thread_id_t osNewPeriodicThread(void (*taskFunc)(void*args), ms_time_t deadline, ms_time_t period);
+thread_handle_t osNewPeriodicThread(thread_handle_t threadBuffer, void (*taskFunc)(void*args), ms_time_t deadline, ms_time_t period);
 
 /**
  * @brief Creates a new thread
  * 
+ * @param threadBuffer The buffer to store the thread
  * @param taskFunc The function that the thread will run
  * @param deadline The deadline of the thread
  * @return int The thread ID of the new thread. Returns -1 if error occurs
  */
-thread_id_t osNewThread(void (*taskFunc)(void*args), ms_time_t deadline);
+thread_handle_t osNewThread(thread_handle_t threadBuffer, void (*taskFunc)(void*args), ms_time_t deadline);
 
 #endif // _THREADS_CORE_H

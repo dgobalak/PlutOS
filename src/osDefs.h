@@ -5,15 +5,9 @@
 #include <stdbool.h>
 #include <LPC17xx.h>
 
-#define MAX_THREADS 10 // Maximum number of threads that can be created
-
 #define MAX_POOL_SIZE 0x2000 // Max size of all stacks combined
 #define MSR_STACK_SIZE 512 // MSP Stack Size (First thread stack starts at this offset from MSP)
 #define THREAD_STACK_SIZE 512 // Size of each thread's stack
-
-#if (THREAD_STACK_SIZE * MAX_THREADS) > MAX_POOL_SIZE
-#error Maximum pool size is too small for the number of threads
-#endif
 
 #define SHPR3 *(uint32_t*)0xE000ED20 // System Handler Priority Register 3
 #define SHPR2 *(uint32_t*)0xE000ED1C // System Handler Priority Register 2
@@ -31,18 +25,8 @@
 // Assuming SYSTICK_MS is 1, this is the max number of ms a thread can run before getting pre-empted
 #define MAX_THREAD_RUNTIME_MS 5
 
-// The index of the idle task in the array of tasks
-#define IDLE_THREAD_ID 0
-
 // The deadline of the idle thread
 #define IDLE_THREAD_DEADLINE UINT32_MAX
-
-// Max number of threads that can be waiting on a mutex
-#define MAX_WAITING_THREADS 10
-
-#if MAX_WAITING_THREADS > MAX_THREADS
-#error MAX_WAITING_THREADS should not be greater than MAX_THREADS
-#endif
 
 /**
  * @brief The state of a thread
@@ -56,12 +40,6 @@ typedef enum thread_state {
 	BLOCKED, // Not used
 	DESTROYED // Not used
 } thread_state_t;
-
-/**
- * @brief The ID number of a thread; the index in the thread array
- * 
- */
-typedef int32_t thread_id_t;
 
 /**
  * @brief An time in ms
@@ -89,6 +67,11 @@ typedef struct osthread {
 	volatile ms_time_t deadlineCounter;
 	volatile bool isPeriodic;
 	ms_time_t period;
+	thread_handle_t prev = NULL;
+	thread_handle_t next = NULL;
 } osthread_t;
+
+// Thread handle type
+typedef osthread_t *thread_handle_t;
 
 #endif // OS_DEFS_H

@@ -18,18 +18,16 @@ typedef enum {
  * @brief The mutex structure
  * 
  * @param status The status of the mutex
- * @param owner The ID of the thread that owns the mutex
- * @param waitingThreads The IDs of the threads that are waiting on the mutex
+ * @param owner The handle of the thread that owns the mutex
  * @param waitingThreadsCount The number of threads that are waiting on the mutex
- * @param firstWaitingThread The index of the first waiting thread in the waitingThreads array
- * @param lastWaitingThread The index of the last waiting thread in the waitingThreads array
+ * @param firstWaitingThread The handle of the first waiting thread in the queue
+ * @param lastWaitingThread The handle of the last waiting thread in the queue
  */
 typedef struct {
     mutex_status_t status;
-    thread_id_t owner;
-    thread_id_t waitingThreads[MAX_WAITING_THREADS];
-    int firstWaitingThread;
-    int lastWaitingThread;
+    thread_handle_t owner;
+    thread_handle_t firstWaitingThread;
+    thread_handle_t lastWaitingThread;
     uint32_t waitingThreadsCount;
 } osmutex_t;
 

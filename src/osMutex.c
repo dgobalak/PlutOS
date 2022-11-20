@@ -4,8 +4,11 @@
 
 #include <stdbool.h>
 
-extern thread_id_t osCurrentTask; // Current task ID
-extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
+extern thread_handle_t taskListHead = NULL; // Head of the task list
+extern thread_handle_t taskListTail = NULL; // Tail of the task list
+extern int taskCount = 0; // Number of tasks in the task linked list
+
+extern thread_handle_t currentTaskHandle = NULL; // Handle for current running task
 
 mutex_handle_t osMutexCreate(mutex_handle_t handle) {
     if (handle == NULL)
@@ -14,12 +17,8 @@ mutex_handle_t osMutexCreate(mutex_handle_t handle) {
     handle->status = AVAILABLE;
     handle->owner = -1;
 
-    for (int i = 0; i < MAX_WAITING_THREADS; i++) {
-        handle->waitingThreads[i] = -1;
-    }
-
-    handle->firstWaitingThread = -1;
-    handle->lastWaitingThread = -1;
+    handle->firstWaitingThread = NULL;
+    handle->lastWaitingThread = NULL;
     handle->waitingThreadsCount = 0;
 
     return true;
@@ -31,16 +30,12 @@ bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever
 
     if (handle->status == AVAILABLE) {
         handle->status = TAKEN;
-        handle->owner = osCurrentTask;
+        handle->owner = currentTaskHandle;
         return true;
     }
 
     // Check if current task already owns the mutex
-    if (handle->owner == osCurrentTask)
-        return false;
-
-    // Check if waiting threads array is full
-    if (handle->waitingThreadsCount == MAX_WAITING_THREADS)
+    if (handle->owner == currentTaskHandle)
         return false;
     
     // Add current task to waiting threads queue
