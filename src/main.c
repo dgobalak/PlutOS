@@ -4,6 +4,10 @@
 #include "uart.h"
 #include "_threadsCore.h"
 #include "_kernelCore.h"
+#include "osMutex.h"
+
+static osmutex_t mutex;
+static mutex_handle_t mutexHandle = &mutex;
 
 /**
  * @brief Periodic test thread function
@@ -12,7 +16,9 @@
  */
 void task1(void* args) {
 	while(1) {
+		osMutexAcquire(mutexHandle, 5, false);
 		printf("In Task 1\n");
+		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
@@ -24,7 +30,9 @@ void task1(void* args) {
  */
 void task2(void* args) {
 	while(1) {
+		osMutexAcquire(mutexHandle, 5, false);
 		printf("In Task 2\n");
+		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
@@ -36,7 +44,9 @@ void task2(void* args) {
  */
 void task3(void* args) {
 	while(1) {
+		osMutexAcquire(mutexHandle, 5, false);
 		printf("In Task 3\n");
+		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
@@ -113,6 +123,8 @@ int main(void) {
 	// Initialize the kernel.
 	kernelInit();
 	
+	osMutexCreate(mutexHandle);
+
 #ifdef LAB4_TEST1
 	osNewPeriodicThread(task1, 20, 4); // 1/256Hz = 3.9ms
 	osNewPeriodicThread(task2, 20, 10); // 1/100Hz = 10ms
