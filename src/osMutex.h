@@ -23,8 +23,6 @@ typedef enum {
  * @param waitingThreadsCount The number of threads that are waiting on the mutex
  * @param firstWaitingThread The index of the first waiting thread in the waitingThreads array
  * @param lastWaitingThread The index of the last waiting thread in the waitingThreads array
- * @param prev The previous mutex handle in the linked list
- * @param next The next mutex handle in the linked list
  */
 typedef struct {
     mutex_status_t status;
@@ -33,8 +31,6 @@ typedef struct {
     int firstWaitingThread;
     int lastWaitingThread;
     uint32_t waitingThreadsCount;
-    mutex_handle_t prev;
-    mutex_handle_t next;
 } osmutex_t;
 
 // The mutex handle type
@@ -66,5 +62,15 @@ bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever
  * @return true if the mutex was successfully unlocked; false otherwise
  */
 bool osMutexRelease(mutex_handle_t handle);
+
+/**
+ * @brief Delete a mutex
+ * @param handle The handle of the mutex to delete
+ * @return true if the mutex was successfully deleted; false otherwise
+ * @warning The mutex must be released before calling this function
+ * @note This function is useless since the mutex is allocated on the stack
+ * It merely resets the mutex to its initial state
+ */
+bool osMutexDelete(mutex_handle_t handle);
 
 #endif // OS_MUTEX_H

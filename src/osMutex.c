@@ -4,25 +4,12 @@
 
 #include <stdbool.h>
 
-static mutex_handle_t mutexListHead = NULL;
-static mutex_handle_t mutexListTail = NULL;
-
 extern thread_id_t osCurrentTask; // Current task ID
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
-extern uint32_t totalThreads; // Number of created threads
 
 mutex_handle_t osMutexCreate(mutex_handle_t handle) {
     if (handle == NULL)
         return false;
-
-    if (mutexListHead == NULL) {
-        mutexListHead = handle;
-        mutexListTail = handle;
-    } else {
-        mutexListTail->next = handle;
-        handle->prev = mutexListTail;
-        mutexListTail = handle;
-    }
 
     handle->status = AVAILABLE;
     handle->owner = -1;
@@ -94,6 +81,19 @@ bool osMutexRelease(mutex_handle_t handle) {
     handle->waitingThreadsCount--;
 
     osThreads[handle->owner]->state = ACTIVE;
+
+    return true;
+}
+
+bool osMutexDelete(mutex_handle_t handle) {
+    if (handle == NULL)
+        return false;
+
+    if (handle->status == TAKEN)
+        return false;
+
+    *handle = NULL;
+    handle = NULL;
 
     return true;
 }
