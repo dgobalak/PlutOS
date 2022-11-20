@@ -51,12 +51,14 @@ bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever
     osThreads[osCurrentTask]->state = SLEEPING;
 
     if (osWaitForever) {
-        while (handle->status != AVAILABLE);
+        while (handle->owner != osCurrentTask) {
+            osYield(); // Is this the intended behavior?
+        }
     } else {
         osSleep(timeout);
     }
 
-    // osMutexRelease should have selected the next thread to acquire the mutex
+    // If this line is reached, osMutexRelease should have given this thread the mutex (or the timeout has expired)
     if (handle->owner == osCurrentTask) {
         handle->status = TAKEN;
         return true;
