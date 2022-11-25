@@ -37,12 +37,17 @@ void osYield(void);
  * @brief Called to yield current task preemptively (Don't reset deadline)
  * 
  */
-void osYieldPreemptive(void);
+void osYieldNoReset(void);
 
 /**
  * @brief Make the current task sleep for `sleepTime` ms
  */
 void osSleep(ms_time_t sleepTime);
+
+/**
+ * @brief Make the current task sleep for `sleepTime` ms
+ */
+void osSleepNoReset(ms_time_t sleepTime);
 
 /**
  * @brief Determine the next task to be run

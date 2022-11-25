@@ -3,11 +3,12 @@
 #include "_kernelCore.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 extern thread_id_t osCurrentTask; // Current task ID
 extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 
-mutex_handle_t osMutexCreate(mutex_handle_t handle) {
+bool osMutexCreate(mutex_handle_t handle) {
     if (handle == NULL)
         return false;
 
@@ -48,14 +49,11 @@ bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever
     handle->waitingThreads[handle->lastWaitingThread] = osCurrentTask;
     handle->waitingThreadsCount++;
 
-    osThreads[osCurrentTask]->state = SLEEPING;
-
     if (osWaitForever) {
-        while (handle->owner != osCurrentTask) {
-            osYield(); // Is this the intended behavior?
-        }
+        osThreads[osCurrentTask].state = BLOCKED;
+				osYieldNoReset();
     } else {
-        osSleep(timeout);
+        osSleepNoReset(timeout);
     }
 
     // If this line is reached, osMutexRelease should have given this thread the mutex (or the timeout has expired)
@@ -63,8 +61,11 @@ bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever
         handle->status = TAKEN;
         return true;
     }
-
-    return false;
+		
+		// handle->firstWaitingThread = (handle->firstWaitingThread + 1) % MAX_WAITING_THREADS;
+    // handle->waitingThreadsCount--;
+    
+		return false;
 }
 
 bool osMutexRelease(mutex_handle_t handle) {
@@ -82,7 +83,7 @@ bool osMutexRelease(mutex_handle_t handle) {
     handle->firstWaitingThread = (handle->firstWaitingThread + 1) % MAX_WAITING_THREADS;
     handle->waitingThreadsCount--;
 
-    osThreads[handle->owner]->state = ACTIVE;
+    osThreads[handle->owner].state = ACTIVE;
 
     return true;
 }
@@ -94,8 +95,7 @@ bool osMutexDelete(mutex_handle_t handle) {
     if (handle->status == TAKEN)
         return false;
 
-    *handle = NULL;
-    handle = NULL;
+    // handle = NULL;
 
     return true;
 }

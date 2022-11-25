@@ -32,7 +32,7 @@ void updateTimers(void) {
 			// Thread is ready to wake up; sleep time is zero
 			osThreads[id].state = ACTIVE;
 
-		} else if (osThreads[id].state == ACTIVE || osThreads[id].state == RUNNING) {		
+		} else if (osThreads[id].state == ACTIVE || osThreads[id].state == RUNNING || osThreads[id].state == BLOCKED) {		
 			if (osThreads[id].deadlineCounter > 0)
 				osThreads[id].deadlineCounter--;
 			
@@ -47,5 +47,5 @@ void updateTimers(void) {
 
 	// If a thread woke up with a deadline earlier than the current thread, switch to that thread
 	if (switchRequired)
-		osYieldPreemptive();
+		osYieldNoReset();
 }

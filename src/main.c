@@ -9,56 +9,87 @@
 static osmutex_t mutex;
 static mutex_handle_t mutexHandle = &mutex;
 
+static osmutex_t counterMutex;
+static mutex_handle_t counterMutexHandle = &counterMutex;
+
+static osmutex_t ledMutex;
+static mutex_handle_t ledMutexHandle = &ledMutex;
+
 /**
- * @brief Periodic test thread function
+ * @brief Test thread function
  * 
  * @param args Thread arguments
  */
 void task1(void* args) {
 	while(1) {
-		osMutexAcquire(mutexHandle, 5, false);
-		printf("In Task 1\n");
+		osMutexAcquire(mutexHandle, 10, true);
+		for (int i = 0; i < 12000; i++) {
+			printf("1\n");
+		}
 		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
 
 /**
- * @brief Periodic test thread function
+ * @brief Test thread function
  * 
  * @param args Thread arguments
  */
 void task2(void* args) {
 	while(1) {
-		osMutexAcquire(mutexHandle, 5, false);
-		printf("In Task 2\n");
+		osMutexAcquire(mutexHandle, 10, true);
+		for (int i = 0; i < 12000; i++) {
+			printf("2\n");
+		}
 		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
 
 /**
- * @brief Periodic test thread function
+ * @brief Test thread function
  * 
  * @param args Thread arguments
  */
 void task3(void* args) {
 	while(1) {
-		osMutexAcquire(mutexHandle, 5, false);
-		printf("In Task 3\n");
+		osMutexAcquire(mutexHandle, 10, true);
+		for (int i = 0; i < 12000; i++) {
+			printf("Task 3\n");
+		}
 		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
 
+void turnOnLED(unsigned int x) {
+	unsigned int gpio1Mask;
+	
+	LPC_GPIO1->FIOCLR |= 0xBU << 28;
+	LPC_GPIO2->FIOCLR |= 0x3E;
+		
+	gpio1Mask = x & 3;
+	gpio1Mask |= (x & 4) << 1;
+	LPC_GPIO1->FIOSET |= gpio1Mask << 28;
+	LPC_GPIO2->FIOSET |= (x & 0xF8) >> 1;
+	
+	for(int i =0; i<100000; i++);
+}
+
+unsigned int t12Counter = 0;
+
 /**
  * @brief Test thread function
  * 
  * @param args Thread arguments
  */
-void task4(void* args) {
+void task12(void* args) {
 	while(1) {
-		printf("In Task 4\n");
+		osMutexAcquire(counterMutexHandle, 0, true);
+		t12Counter++;
+		osMutexRelease(counterMutexHandle);
+		
 		osYield();
 	}
 }
@@ -68,21 +99,16 @@ void task4(void* args) {
  * 
  * @param args Thread arguments
  */
-void task5(void* args) {
+void task13(void* args) {	
 	while(1) {
-		printf("In Task 5\n");
-		osSleep(5);
-	}
-}
+		osMutexAcquire(counterMutexHandle, 10, true);
+		osMutexAcquire(ledMutexHandle, 10, true);
 
-/**
- * @brief Periodic test thread function
- * 
- * @param args Thread arguments
- */
-void task6(void* args) {
-	while(1) {
-		printf("In Task 6\n");
+		turnOnLED(t12Counter%47U);
+		
+		osMutexRelease(ledMutexHandle);
+		osMutexRelease(counterMutexHandle);
+		
 		osYield();
 	}
 }
@@ -92,50 +118,48 @@ void task6(void* args) {
  * 
  * @param args Thread arguments
  */
-void task7(void* args) {
+void task14(void* args) {
 	while(1) {
-		printf("In Task 7\n");
-		osSleep(2000);
-	}
-}
-
-/**
- * @brief Test thread function
- * 
- * @param args Thread arguments
- */
-void task8(void* args) {
-	while(1) {
-		printf("In Task 8\n");
-		osSleep(3000);
+		osMutexAcquire(ledMutexHandle, 10, true);
+		turnOnLED(0x71U);
+		osMutexRelease(ledMutexHandle);
+		
+		osYield();
 	}
 }
 
 
 // #define LAB4_TEST1
 // #define LAB4_TEST2
-#define LAB4_TEST3
+// #define LAB4_TEST3
+
+#define LAB5_TEST1
+// #define LAB5_TEST2
 
 int main(void) {	
 	// Always call this function at the start. It sets up various peripherals, the clock etc.
 	SystemInit();
 	
+	printf("-------------------------------------\n");
+	
+	LPC_GPIO1->FIODIR |= 0xBU<<28;
+	LPC_GPIO2->FIODIR |= 0x7CU;
+	
 	// Initialize the kernel.
 	kernelInit();
 	
 	osMutexCreate(mutexHandle);
-
-#ifdef LAB4_TEST1
-	osNewPeriodicThread(task1, 20, 4); // 1/256Hz = 3.9ms
-	osNewPeriodicThread(task2, 20, 10); // 1/100Hz = 10ms
-	osNewPeriodicThread(task3, 20, 83); // 1/12Hz = 83.3ms
-#elif defined(LAB4_TEST2)
-	osNewThread(task4, 10);
-	osNewThread(task5, 10);
-	osNewPeriodicThread(task6, 10, 5); // 1/200Hz = 5ms
-#elif defined(LAB4_TEST3)
-	osNewThread(task7, 10);
-	osNewThread(task8, 10);
+	osMutexCreate(counterMutexHandle);
+	osMutexCreate(ledMutexHandle);
+	
+#ifdef LAB5_TEST1
+	osNewThread(task1, 100);
+	osNewThread(task2, 100);
+	osNewThread(task3, 100);
+#elif defined(LAB5_TEST2)
+	osNewThread(task12, 40);
+	osNewThread(task13, 40);
+	osNewThread(task14, 40);
 #endif
 	
 	// Start kernel and start running first thread

@@ -95,7 +95,7 @@ void osYield(void) {
 	__ASM(SVC_YIELD_SWITCH_CMD); // Make SVC call to yield
 }
 
-void osYieldPreemptive(void) {
+void osYieldNoReset(void) {
 	__ASM(SVC_YIELD_SWITCH_PREEMPTIVE_CMD); // Make SVC call to yield preemptively
 }
 
@@ -104,6 +104,13 @@ void osSleep(ms_time_t sleepTime) {
 	osThreads[osCurrentTask].sleepTimeRemaining = sleepTime;
 	osThreads[osCurrentTask].state = SLEEPING;
 	osYield();
+}
+
+void osSleepNoReset(ms_time_t sleepTime) {
+	// Set current task to the SLEEPING state
+	osThreads[osCurrentTask].sleepTimeRemaining = sleepTime;
+	osThreads[osCurrentTask].state = SLEEPING;
+	osYieldNoReset();
 }
 
 bool osKernelStart(void) {

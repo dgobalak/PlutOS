@@ -53,7 +53,7 @@ typedef enum thread_state {
 	ACTIVE, // Task is able to run
 	RUNNING, // Task is running
 	SLEEPING, // Task is sleeping
-	BLOCKED, // Not used
+	BLOCKED,
 	DESTROYED // Not used
 } thread_state_t;
 
