@@ -25,6 +25,7 @@ void task1(void* args) {
 		osMutexAcquire(mutexHandle, 10, true);
 		for (int i = 0; i < 12000; i++) {
 			printf("1\n");
+			osYield();
 		}
 		osMutexRelease(mutexHandle);
 		osYield();
@@ -41,6 +42,7 @@ void task2(void* args) {
 		osMutexAcquire(mutexHandle, 10, true);
 		for (int i = 0; i < 12000; i++) {
 			printf("2\n");
+			osYield();
 		}
 		osMutexRelease(mutexHandle);
 		osYield();
@@ -57,6 +59,7 @@ void task3(void* args) {
 		osMutexAcquire(mutexHandle, 10, true);
 		for (int i = 0; i < 12000; i++) {
 			printf("Task 3\n");
+			osYield();
 		}
 		osMutexRelease(mutexHandle);
 		osYield();
