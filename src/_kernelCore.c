@@ -96,7 +96,7 @@ void osYield(void) {
 }
 
 void osYieldNoReset(void) {
-	__ASM(SVC_YIELD_SWITCH_PREEMPTIVE_CMD); // Make SVC call to yield preemptively
+	__ASM(SVC_YIELD_SWITCH_NO_RESET_CMD); // Make SVC call to yield preemptively
 }
 
 void osSleep(ms_time_t sleepTime) {

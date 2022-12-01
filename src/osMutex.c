@@ -51,21 +51,15 @@ bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever
 
     if (osWaitForever) {
         osThreads[osCurrentTask].state = BLOCKED;
-				osYieldNoReset();
+		osYieldNoReset();
     } else {
         osSleepNoReset(timeout);
     }
 
-    // If this line is reached, osMutexRelease should have given this thread the mutex (or the timeout has expired)
-    if (handle->owner == osCurrentTask) {
-        handle->status = TAKEN;
+    if (handle->owner == osCurrentTask)
         return true;
-    }
-		
-		// handle->firstWaitingThread = (handle->firstWaitingThread + 1) % MAX_WAITING_THREADS;
-    // handle->waitingThreadsCount--;
     
-		return false;
+	return false;
 }
 
 bool osMutexRelease(mutex_handle_t handle) {
@@ -77,10 +71,17 @@ bool osMutexRelease(mutex_handle_t handle) {
 
     if (handle->owner != osCurrentTask)
         return false;
+    
+    if (handle->waitingThreadsCount == 0) {
+        handle->status = AVAILABLE;
+        handle->owner = -1;
+        return true;
+    }
 
-    handle->status = AVAILABLE;
-    handle->owner = handle->waitingThreads[handle->firstWaitingThread];
+    // Remove first waiting thread from queue
     handle->firstWaitingThread = (handle->firstWaitingThread + 1) % MAX_WAITING_THREADS;
+    handle->owner = handle->waitingThreads[handle->firstWaitingThread]
+    handle->waitingThreads[handle->firstWaitingThread] = -1;
     handle->waitingThreadsCount--;
 
     osThreads[handle->owner].state = ACTIVE;
@@ -95,7 +96,15 @@ bool osMutexDelete(mutex_handle_t handle) {
     if (handle->status == TAKEN)
         return false;
 
-    // handle = NULL;
+    handle->owner = -1;
+
+    for (int i = 0; i < MAX_WAITING_THREADS; i++) {
+        handle->waitingThreads[i] = -1;
+    }
+
+    handle->firstWaitingThread = -1;
+    handle->lastWaitingThread = -1;
+    handle->waitingThreadsCount = 0;
 
     return true;
 }
