@@ -83,10 +83,8 @@ void pendPendSV(void) {
 
 void yieldCurrentTask(uint8_t stackDiff) {
 	if (osCurrentTask >= 0) {
-		// Yield the current RUNNING task
-		// If the thread was already set to the SLEEPING state by osSleep, keep it as SLEEPING
-		// If the thread was already set to the BLOCKED state
-		// Otherwise, set as ACTIVE
+		// Current task is either RUNNING, SLEEPING, OR ACTIVE
+		// RUNNING task must be set to ACTIVE
 		if (osThreads[osCurrentTask].state == RUNNING)
 			osThreads[osCurrentTask].state = ACTIVE;
 		
@@ -99,7 +97,7 @@ void osYield(void) {
 }
 
 void osYieldNoReset(void) {
-	__ASM(SVC_YIELD_SWITCH_NO_RESET_CMD); // Make SVC call to yield preemptively
+	__ASM(SVC_YIELD_SWITCH_NO_RESET_CMD); // Make SVC call to yield without resetting deadlines
 }
 
 void osSleep(ms_time_t sleepTime) {
@@ -110,7 +108,7 @@ void osSleep(ms_time_t sleepTime) {
 }
 
 void osSleepNoReset(ms_time_t sleepTime) {
-	// Set current task to the SLEEPING state
+	// Set current task to the SLEEPING state without resetting deadlines
 	osThreads[osCurrentTask].sleepTimeRemaining = sleepTime;
 	osThreads[osCurrentTask].state = SLEEPING;
 	osYieldNoReset();

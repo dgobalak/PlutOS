@@ -6,12 +6,15 @@
 #include "_kernelCore.h"
 #include "osMutex.h"
 
+// Mutex to protect printing
 static osmutex_t mutex;
 static mutex_handle_t mutexHandle = &mutex;
 
+// Mutex to protect access to global counter
 static osmutex_t counterMutex;
 static mutex_handle_t counterMutexHandle = &counterMutex;
 
+// Mutex to protect the LEDs
 static osmutex_t ledMutex;
 static mutex_handle_t ledMutexHandle = &ledMutex;
 
@@ -69,6 +72,11 @@ void task3(void* args) {
 	}
 }
 
+/**
+ * @brief Display a byte on the LEDs
+ * 
+ * @param x The value to display on the LEDs
+ */
 void turnOnLED(unsigned int x) {
 	unsigned int gpio1Mask;
 	
@@ -111,7 +119,7 @@ void task5(void* args) {
 		osMutexAcquire(ledMutexHandle, 0, true);
 
 		turnOnLED(t12Counter%47U);
-		printf("%u\n", t12Counter);
+		printf("%u\n", t12Counter); // Protected by LED mutex
 
 		osMutexRelease(ledMutexHandle);
 		osMutexRelease(counterMutexHandle);
@@ -130,7 +138,7 @@ void task6(void* args) {
 		osMutexAcquire(ledMutexHandle, 0, true);
 
 		turnOnLED(0x71U);
-		printf("0x%x\n", 0x71U);
+		printf("0x%x\n", 0x71U); // Protected by LED mutex
 
 		osMutexRelease(ledMutexHandle);
 		
@@ -150,6 +158,7 @@ int main(void) {
 	// Initialize the kernel.
 	kernelInit();
 	
+	// Create mutexes
 	osMutexCreate(mutexHandle);
 	osMutexCreate(counterMutexHandle);
 	osMutexCreate(ledMutexHandle);

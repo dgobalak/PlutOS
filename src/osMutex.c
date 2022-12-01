@@ -11,14 +11,17 @@ extern osthread_t osThreads[MAX_THREADS]; // Array of all threads
 bool osMutexCreate(mutex_handle_t handle) {
     if (handle == NULL)
         return false;
-
+		
+		// Mutex is initially AVAILABLE with no owner
     handle->status = AVAILABLE;
     handle->owner = -1;
 
+		// Initialize waitingThreads array's elements to -1
     for (int i = 0; i < MAX_WAITING_THREADS; i++) {
         handle->waitingThreads[i] = -1;
     }
-
+		
+		// Initialize queue tracking variables
     handle->firstWaitingThread = -1;
     handle->lastWaitingThread = -1;
     handle->waitingThreadsCount = 0;
@@ -29,7 +32,7 @@ bool osMutexCreate(mutex_handle_t handle) {
 bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever) {
     if (handle == NULL)
         return false;
-
+		
     if (handle->status == AVAILABLE) {
         handle->status = TAKEN;
         handle->owner = osCurrentTask;
@@ -50,12 +53,15 @@ bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever
     handle->waitingThreadsCount++;
 
     if (osWaitForever) {
-        osThreads[osCurrentTask].state = BLOCKED;
+        osThreads[osCurrentTask].state = BLOCKED; // osMutexRelease is the only way to set BLOCKED task to ACTIVE
         osYieldNoReset();
     } else {
         osSleepNoReset(timeout);
     }
-
+		
+		// This line isn't reached until the mutex is acquired or the timeout is reached
+		
+		// osMutexRelease may have given the current task the mutex
     if (handle->owner == osCurrentTask)
         return true;
     
@@ -73,6 +79,7 @@ bool osMutexRelease(mutex_handle_t handle) {
         return false;
     
     if (handle->waitingThreadsCount == 0) {
+				// No waiting threads in queue
         handle->status = AVAILABLE;
         handle->owner = -1;
         return true;
@@ -83,7 +90,8 @@ bool osMutexRelease(mutex_handle_t handle) {
     handle->owner = handle->waitingThreads[handle->firstWaitingThread];
     handle->waitingThreads[handle->firstWaitingThread] = -1;
     handle->waitingThreadsCount--;
-
+		
+		// Task state switched from BLOCKED to ACTIVE
     osThreads[handle->owner].state = ACTIVE;
 
     return true;
