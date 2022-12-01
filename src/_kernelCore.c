@@ -64,13 +64,13 @@ void osSched(void) {
 			earliestID = id;
 		}
 	}
-
-	osCurrentTask = earliestID; // -1 if idle thread is the only active task
 	
 	// If no ACTIVE task is found, switch to the idle task
 	if (earliestID == -1)
 		osCurrentTask = IDLE_THREAD_ID;
-		
+
+	osCurrentTask = earliestID; // -1 if idle thread is the only active task
+	
 	// Set the chosen thread's state to RUNNING
 	osThreads[osCurrentTask].state = RUNNING;
 }
@@ -85,8 +85,11 @@ void yieldCurrentTask(uint8_t stackDiff) {
 	if (osCurrentTask >= 0) {
 		// Yield the current RUNNING task
 		// If the thread was already set to the SLEEPING state by osSleep, keep it as SLEEPING
+		// If the thread was already set to the BLOCKED state
 		// Otherwise, set as ACTIVE
-		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
+		if (osThreads[osCurrentTask].state == RUNNING)
+			osThreads[osCurrentTask].state = ACTIVE;
+		
 		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - stackDiff*sizeof(uint32_t)); // We are about to push `stackDiff` uint32_t's
 	}
 }

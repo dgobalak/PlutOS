@@ -80,7 +80,7 @@ bool osMutexRelease(mutex_handle_t handle) {
 
     // Remove first waiting thread from queue
     handle->firstWaitingThread = (handle->firstWaitingThread + 1) % MAX_WAITING_THREADS;
-    handle->owner = handle->waitingThreads[handle->firstWaitingThread]
+    handle->owner = handle->waitingThreads[handle->firstWaitingThread];
     handle->waitingThreads[handle->firstWaitingThread] = -1;
     handle->waitingThreadsCount--;
 

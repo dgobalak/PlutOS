@@ -147,87 +147,87 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>198</LineNumber>
+          <LineNumber>87</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>4038</Address>
+          <Address>2904</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>\\ecfile1.uwaterloo.ca\dgobalak\ecfile1.uwaterloo.ca\dgobalak\My Documents\MTE 241\PlutOS\src\main.c</Filename>
+          <Filename>\ecfile1.uwaterloo.ca\dgobalak\My Documents\MTE 241\PlutOS\src\osMutex.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\tim\src/main.c\198</Expression>
+          <Expression>\\tim\src/osMutex.c\87</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>217</LineNumber>
+          <LineNumber>33</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>4118</Address>
+          <Address>4274</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>\\ecfile1.uwaterloo.ca\dgobalak\ecfile1.uwaterloo.ca\dgobalak\My Documents\MTE 241\PlutOS\src\main.c</Filename>
+          <Filename>\ecfile1.uwaterloo.ca\dgobalak\My Documents\MTE 241\PlutOS\src\_timerCore.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\tim\src/main.c\217</Expression>
+          <Expression>\\tim\src/_timerCore.c\33</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>104</LineNumber>
+          <LineNumber>82</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>2856</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\src\main.c</Filename>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>\ecfile1.uwaterloo.ca\dgobalak\My Documents\MTE 241\PlutOS\src\osMutex.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\tim\src/osMutex.c\82</Expression>
         </Bp>
         <Bp>
           <Number>3</Number>
           <Type>0</Type>
-          <LineNumber>123</LineNumber>
+          <LineNumber>48</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>2662</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\src\main.c</Filename>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>\ecfile1.uwaterloo.ca\dgobalak\My Documents\MTE 241\PlutOS\src\osMutex.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\tim\src/osMutex.c\48</Expression>
         </Bp>
         <Bp>
           <Number>4</Number>
           <Type>0</Type>
-          <LineNumber>107</LineNumber>
+          <LineNumber>72</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>3670</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\src\main.c</Filename>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>\ecfile1.uwaterloo.ca\dgobalak\My Documents\MTE 241\PlutOS\src\_kernelCore.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\tim\src/_kernelCore.c\72</Expression>
         </Bp>
         <Bp>
           <Number>5</Number>
           <Type>0</Type>
-          <LineNumber>126</LineNumber>
+          <LineNumber>70</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>

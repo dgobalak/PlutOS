@@ -22,12 +22,13 @@ static mutex_handle_t ledMutexHandle = &ledMutex;
  */
 void task1(void* args) {
 	while(1) {
-		osMutexAcquire(mutexHandle, 10, true);
-		for (int i = 0; i < 12000; i++) {
-			printf("1\n");
-			osYield();
+		if (osMutexAcquire(mutexHandle, 0, true)) {
+			for (int i = 0; i < 5; i++) {
+				printf("Task 1\n");
+				osYield();
+			}
+			osMutexRelease(mutexHandle);
 		}
-		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
@@ -39,12 +40,13 @@ void task1(void* args) {
  */
 void task2(void* args) {
 	while(1) {
-		osMutexAcquire(mutexHandle, 10, true);
-		for (int i = 0; i < 12000; i++) {
-			printf("2\n");
-			osYield();
+		if (osMutexAcquire(mutexHandle, 0, true)) {
+			for (int i = 0; i < 5; i++) {
+				printf("Task 2\n");
+				osYield();
+			}
+			osMutexRelease(mutexHandle);
 		}
-		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
@@ -56,12 +58,13 @@ void task2(void* args) {
  */
 void task3(void* args) {
 	while(1) {
-		osMutexAcquire(mutexHandle, 10, true);
-		for (int i = 0; i < 12000; i++) {
-			printf("Task 3\n");
-			osYield();
+		if (osMutexAcquire(mutexHandle, 0, true)) {
+			for (int i = 0; i < 5; i++) {
+				printf("Task 3\n");
+				osYield();
+			}
+			osMutexRelease(mutexHandle);
 		}
-		osMutexRelease(mutexHandle);
 		osYield();
 	}
 }
@@ -77,7 +80,7 @@ void turnOnLED(unsigned int x) {
 	LPC_GPIO1->FIOSET |= gpio1Mask << 28;
 	LPC_GPIO2->FIOSET |= (x & 0xF8) >> 1;
 	
-	for(int i =0; i<100000; i++);
+	for(int i = 0; i < 5000000; i++);
 }
 
 unsigned int t12Counter = 0;
@@ -87,7 +90,7 @@ unsigned int t12Counter = 0;
  * 
  * @param args Thread arguments
  */
-void task12(void* args) {
+void task4(void* args) {
 	while(1) {
 		osMutexAcquire(counterMutexHandle, 0, true);
 		t12Counter++;
@@ -102,13 +105,14 @@ void task12(void* args) {
  * 
  * @param args Thread arguments
  */
-void task13(void* args) {	
+void task5(void* args) {	
 	while(1) {
-		osMutexAcquire(counterMutexHandle, 10, true);
-		osMutexAcquire(ledMutexHandle, 10, true);
+		osMutexAcquire(counterMutexHandle, 0, true);
+		osMutexAcquire(ledMutexHandle, 0, true);
 
 		turnOnLED(t12Counter%47U);
-		
+		printf("%u\n", t12Counter);
+
 		osMutexRelease(ledMutexHandle);
 		osMutexRelease(counterMutexHandle);
 		
@@ -121,30 +125,25 @@ void task13(void* args) {
  * 
  * @param args Thread arguments
  */
-void task14(void* args) {
+void task6(void* args) {
 	while(1) {
-		osMutexAcquire(ledMutexHandle, 10, true);
+		osMutexAcquire(ledMutexHandle, 0, true);
+
 		turnOnLED(0x71U);
+		printf("0x%x\n", 0x71U);
+
 		osMutexRelease(ledMutexHandle);
 		
 		osYield();
 	}
 }
 
-
-// #define LAB4_TEST1
-// #define LAB4_TEST2
-// #define LAB4_TEST3
-
-#define LAB5_TEST1
-// #define LAB5_TEST2
-
+// #define LAB5_TEST1
+#define LAB5_TEST2
 int main(void) {	
 	// Always call this function at the start. It sets up various peripherals, the clock etc.
 	SystemInit();
-	
-	printf("-------------------------------------\n");
-	
+		
 	LPC_GPIO1->FIODIR |= 0xBU<<28;
 	LPC_GPIO2->FIODIR |= 0x7CU;
 	
@@ -154,15 +153,15 @@ int main(void) {
 	osMutexCreate(mutexHandle);
 	osMutexCreate(counterMutexHandle);
 	osMutexCreate(ledMutexHandle);
-	
+		
 #ifdef LAB5_TEST1
-	osNewThread(task1, 100);
-	osNewThread(task2, 100);
-	osNewThread(task3, 100);
+	osNewThread(task1, 10000);
+	osNewThread(task2, 10000);
+	osNewThread(task3, 10000);
 #elif defined(LAB5_TEST2)
-	osNewThread(task12, 40);
-	osNewThread(task13, 40);
-	osNewThread(task14, 40);
+	osNewThread(task4, 10000);
+	osNewThread(task5, 10000);
+	osNewThread(task6, 10000);
 #endif
 	
 	// Start kernel and start running first thread
