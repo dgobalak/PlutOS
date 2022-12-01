@@ -51,7 +51,7 @@ bool osMutexAcquire(mutex_handle_t handle, ms_time_t timeout, bool osWaitForever
 
     if (osWaitForever) {
         osThreads[osCurrentTask].state = BLOCKED;
-		osYieldNoReset();
+        osYieldNoReset();
     } else {
         osSleepNoReset(timeout);
     }
