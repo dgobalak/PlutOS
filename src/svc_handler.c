@@ -24,7 +24,7 @@ void svcYield(void) {
 	pendPendSV();
 }
 
-void svcYieldPreemptive(void) {
+void svcYieldNoReset(void) {
 	// Switch to new thread
 	yieldCurrentTask(NUM_REGS_TO_PUSH);
 	osSched(); // Choose next task			
@@ -39,8 +39,8 @@ void SVC_Handler_Main(uint32_t *svc_args) {
 		case SVC_YIELD_SWITCH:
 			svcYield();
 			break;
-		case SVC_YIELD_SWITCH_PREEMPTIVE:
-			svcYieldPreemptive();
+		case SVC_YIELD_SWITCH_NO_RESET:
+			svcYieldNoReset();
 			break;
 	}
 

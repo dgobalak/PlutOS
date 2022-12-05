@@ -64,13 +64,13 @@ void osSched(void) {
 			earliestID = id;
 		}
 	}
-
-	osCurrentTask = earliestID; // -1 if idle thread is the only active task
 	
 	// If no ACTIVE task is found, switch to the idle task
 	if (earliestID == -1)
 		osCurrentTask = IDLE_THREAD_ID;
-		
+
+	osCurrentTask = earliestID; // -1 if idle thread is the only active task
+	
 	// Set the chosen thread's state to RUNNING
 	osThreads[osCurrentTask].state = RUNNING;
 }
@@ -83,10 +83,11 @@ void pendPendSV(void) {
 
 void yieldCurrentTask(uint8_t stackDiff) {
 	if (osCurrentTask >= 0) {
-		// Yield the current RUNNING task
-		// If the thread was already set to the SLEEPING state by osSleep, keep it as SLEEPING
-		// Otherwise, set as ACTIVE
-		osThreads[osCurrentTask].state = (osThreads[osCurrentTask].state == SLEEPING) ? SLEEPING : ACTIVE;
+		// Current task is either RUNNING, SLEEPING, OR ACTIVE
+		// RUNNING task must be set to ACTIVE
+		if (osThreads[osCurrentTask].state == RUNNING)
+			osThreads[osCurrentTask].state = ACTIVE;
+		
 		osThreads[osCurrentTask].threadStack = (uint32_t*)(__get_PSP() - stackDiff*sizeof(uint32_t)); // We are about to push `stackDiff` uint32_t's
 	}
 }
@@ -95,8 +96,8 @@ void osYield(void) {
 	__ASM(SVC_YIELD_SWITCH_CMD); // Make SVC call to yield
 }
 
-void osYieldPreemptive(void) {
-	__ASM(SVC_YIELD_SWITCH_PREEMPTIVE_CMD); // Make SVC call to yield preemptively
+void osYieldNoReset(void) {
+	__ASM(SVC_YIELD_SWITCH_NO_RESET_CMD); // Make SVC call to yield without resetting deadlines
 }
 
 void osSleep(ms_time_t sleepTime) {
@@ -106,7 +107,14 @@ void osSleep(ms_time_t sleepTime) {
 	osYield();
 }
 
-bool osKernelStart() {
+void osSleepNoReset(ms_time_t sleepTime) {
+	// Set current task to the SLEEPING state without resetting deadlines
+	osThreads[osCurrentTask].sleepTimeRemaining = sleepTime;
+	osThreads[osCurrentTask].state = SLEEPING;
+	osYieldNoReset();
+}
+
+bool osKernelStart(void) {
 	if (totalThreads > 0) {
 		osCurrentTask = -1;
 		__set_CONTROL(THREADING_MODE);
